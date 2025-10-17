@@ -1,0 +1,379 @@
+// CollabConnect Database Schema
+// The foundation for connecting people and fighting the system together
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// USER & AUTHENTICATION
+// ========================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  password      String? // nullable for OAuth users
+  name          String?
+  image         String?
+
+  // Transparency fields - show when account was created
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  profile       Profile?
+  accounts      Account[]
+  sessions      Session[]
+
+  // Collaborations
+  groupMemberships     GroupMember[]
+  messagesCreated      Message[]
+  collaborationsOwned  Collaboration[] @relation("CollaborationOwner")
+  collaborations       CollaborationMember[]
+
+  // Activity
+  notifications        Notification[]
+
+  @@map("users")
+}
+
+// OAuth accounts (Google, GitHub, etc.)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ========================================
+// USER PROFILES - THE HEART OF TRANSPARENCY
+// ========================================
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  bio         String?  @db.Text
+  location    String?
+  latitude    Float?   // For map display
+  longitude   Float?
+
+  // Verification status - FULL TRANSPARENCY
+  isVerified        Boolean   @default(false)
+  verifiedAt        DateTime?
+  verificationType  String?   // "email", "phone", "id", "manual"
+
+  // Profile customization
+  preferredLanguage String    @default("en")
+  profileStyle      String?   // User-chosen profile style/theme
+
+  // Collaboration stats - PUBLIC FOR TRANSPARENCY
+  totalCollaborations Int     @default(0)
+  successfulCollabs   Int     @default(0)
+  activeCollabs       Int     @default(0)
+
+  // Interests and hobbies
+  hobbies       ProfileHobby[]
+  interests     ProfileInterest[]
+
+  // Availability for collaboration
+  isAvailable   Boolean   @default(true)
+  availabilityNote String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("profiles")
+}
+
+// ========================================
+// HOBBIES & INTERESTS - FOR MATCHING
+// ========================================
+
+model Hobby {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // "sports", "arts", "tech", "community", etc.
+  description String?
+
+  profiles    ProfileHobby[]
+
+  createdAt   DateTime @default(now())
+
+  @@map("hobbies")
+}
+
+model ProfileHobby {
+  id        String   @id @default(cuid())
+  profileId String
+  hobbyId   String
+
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  hobby     Hobby    @relation(fields: [hobbyId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, hobbyId])
+  @@map("profile_hobbies")
+}
+
+model Interest {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // "insurance", "real_estate", "legal", "finance", etc.
+  description String?
+
+  profiles    ProfileInterest[]
+
+  createdAt   DateTime @default(now())
+
+  @@map("interests")
+}
+
+model ProfileInterest {
+  id         String   @id @default(cuid())
+  profileId  String
+  interestId String
+
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, interestId])
+  @@map("profile_interests")
+}
+
+// ========================================
+// COLLABORATION GROUPS - WHERE THE MAGIC HAPPENS
+// ========================================
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  type        String   // "insurance_fight", "house_bidding", "general", "hobby"
+
+  // Map visibility
+  isPublic    Boolean  @default(false)
+  latitude    Float?
+  longitude   Float?
+
+  // Metadata
+  maxMembers  Int?
+  currentMembers Int   @default(0)
+
+  // Transparency
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members     GroupMember[]
+  messages    Message[]
+  collaborations Collaboration[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      String   @default("member") // "owner", "admin", "member"
+
+  joinedAt  DateTime @default(now())
+
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+// ========================================
+// COLLABORATIONS - TRACKING EVERYTHING
+// ========================================
+
+model Collaboration {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  type        String   // "insurance_claim", "house_purchase", "legal_action", "project"
+  status      String   @default("active") // "active", "completed", "failed", "paused"
+
+  // Ownership
+  ownerId     String
+  owner       User     @relation("CollaborationOwner", fields: [ownerId], references: [id])
+
+  // Optional group association
+  groupId     String?
+  group       Group?   @relation(fields: [groupId], references: [id])
+
+  // Outcome tracking - FOR TRANSPARENCY
+  outcome     String?  // "successful", "unsuccessful", "ongoing"
+  outcomeNote String?  @db.Text
+
+  // Timestamps
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members     CollaborationMember[]
+  documents   CollaborationDocument[]
+
+  @@map("collaborations")
+}
+
+model CollaborationMember {
+  id              String        @id @default(cuid())
+  collaborationId String
+  userId          String
+  role            String        @default("member") // "lead", "member", "advisor"
+
+  joinedAt        DateTime      @default(now())
+  leftAt          DateTime?
+
+  collaboration   Collaboration @relation(fields: [collaborationId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([collaborationId, userId])
+  @@map("collaboration_members")
+}
+
+// Document sharing for collaborations
+model CollaborationDocument {
+  id              String        @id @default(cuid())
+  collaborationId String
+  title           String
+  description     String?
+  fileUrl         String
+  fileType        String
+
+  uploadedAt      DateTime      @default(now())
+
+  collaboration   Collaboration @relation(fields: [collaborationId], references: [id], onDelete: Cascade)
+
+  @@map("collaboration_documents")
+}
+
+// ========================================
+// MESSAGING SYSTEM
+// ========================================
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+
+  // Can be group message or direct message
+  groupId   String?
+  userId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// ========================================
+// PROPERTY LISTINGS - FOR HOUSE BIDDING
+// ========================================
+
+model PropertyListing {
+  id          String   @id @default(cuid())
+  externalId  String?  @unique // From API (Zillow, etc.)
+
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  country     String   @default("USA")
+
+  latitude    Float
+  longitude   Float
+
+  price       Float
+  bedrooms    Int?
+  bathrooms   Float?
+  sqft        Int?
+  propertyType String? // "house", "condo", "apartment", etc.
+
+  description String?  @db.Text
+  imageUrl    String?
+  listingUrl  String?
+
+  // Metadata
+  isActive    Boolean  @default(true)
+  source      String   // "zillow", "realtor", "manual"
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@map("property_listings")
+}
+
+// ========================================
+// NOTIFICATIONS
+// ========================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "new_match", "group_invite", "message", "collaboration_update"
+  title     String
+  message   String
+  link      String?
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// ========================================
+// VERIFICATION TOKENS
+// ========================================
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
