@@ -8,7 +8,7 @@ Fixed Tailwind CSS PostCSS error and NextAuth compatibility issues preventing th
 ## 🎯 Issues Resolved
 
 ### 1. ✅ Tailwind CSS v4 PostCSS Plugin Error
-**Error:** `Error: It looks like you're trying to use tailwindcss directly as a PostCSS plugin`
+**Error:** `Error: It looks like you're trying to use tailwindcss directly as aa PostCSS plugin`
 
 **Solution:**
 - Installed `@tailwindcss/postcss` package

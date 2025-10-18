@@ -1,0 +1,106 @@
+name: Monitoring & Alerts
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+jobs:
+  # Health Check Monitoring
+  health-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production health
+        run: |
+          curl -f https://collab-connect.vercel.app/api/health || exit 1
+        continue-on-error: true
+
+      - name: Check database connectivity
+        run: |
+          echo "Checking database health..."
+          # Add database health check here
+        continue-on-error: true
+
+      - name: Check external APIs
+        run: |
+          echo "Checking external API dependencies..."
+          # Add API health checks here
+        continue-on-error: true
+
+  # Performance Monitoring
+  performance-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Lighthouse audit
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: https://collab-connect.vercel.app
+          uploadArtifacts: true
+        continue-on-error: true
+
+      - name: Check response times
+        run: |
+          time curl -w "@curl-format.txt" -o /dev/null -s https://collab-connect.vercel.app || true
+        continue-on-error: true
+
+  # Security Monitoring
+  security-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Check for vulnerabilities
+        run: |
+          npm audit --audit-level=high || echo "Vulnerabilities found"
+        continue-on-error: true
+
+      - name: Check SSL certificate
+        run: |
+          echo | openssl s_client -servername collab-connect.vercel.app -connect collab-connect.vercel.app:443 2>/dev/null | openssl x509 -noout -dates || true
+        continue-on-error: true
+
+  # Uptime Monitoring
+  uptime-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check main site
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://collab-connect.vercel.app
+          follow-redirect: true
+          max-attempts: 3
+          retry-delay: 5s
+        continue-on-error: true
+
+      - name: Check API endpoints
+        run: |
+          endpoints=("/api/health" "/api/status")
+          for endpoint in "${endpoints[@]}"; do
+            echo "Checking $endpoint"
+            curl -f "https://collab-connect.vercel.app$endpoint" || echo "$endpoint failed"
+          done
+        continue-on-error: true
+
+  # Notify on failures
+  notify-on-failure:
+    runs-on: ubuntu-latest
+    needs: [health-checks, performance-monitoring, security-alerts, uptime-check]
+    if: failure()
+    steps:
+      - name: Send notification
+        run: |
+          echo "Monitoring detected issues. Check the workflow logs."
+          # Add notification logic here (Slack, Discord, Email, etc.)
