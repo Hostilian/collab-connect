@@ -1,22 +1,10 @@
-/**
- * External API Integrations
- *
- * "The system's rigged, but we've got the APIs to rig it back."
- * - A platform that actually gives a damn about people
- *
- * ALL APIs here are either open source or free for personal/small business use.
- * Because transparency and accessibility matter.
- */
+// External API integrations. All services are free or offer generous free tiers.
 
 // ==============================================
 // GEOCODING & LOCATION SERVICES
 // ==============================================
 
-/**
- * Nominatim (OpenStreetMap) - Free geocoding
- * Address → Coordinates
- * Rate limit: 1 req/sec (respect OSM servers)
- */
+/** Nominatim (OpenStreetMap). */
 export async function geocodeAddress(address: string) {
   try {
     const response = await fetch(
@@ -46,10 +34,7 @@ export async function geocodeAddress(address: string) {
   }
 }
 
-/**
- * LocationIQ - Faster geocoding with free tier
- * Better for production use (60 req/sec on free tier)
- */
+/** LocationIQ geocoding. */
 export async function geocodeAddressLocationIQ(address: string) {
   const apiKey = process.env.LOCATIONIQ_API_KEY;
   if (!apiKey) return geocodeAddress(address); // Fallback to Nominatim
@@ -78,10 +63,7 @@ export async function geocodeAddressLocationIQ(address: string) {
   }
 }
 
-/**
- * OpenCage Geocoder - Detailed location data
- * Free tier: 2,500 requests/day
- */
+/** OpenCage geocoding. */
 export async function geocodeAddressOpenCage(address: string) {
   const apiKey = process.env.OPENCAGE_API_KEY;
   if (!apiKey) return geocodeAddress(address);
@@ -112,9 +94,7 @@ export async function geocodeAddressOpenCage(address: string) {
   }
 }
 
-/**
- * Reverse Geocode - Coordinates → Address
- */
+/** Reverse geocoding using Nominatim. */
 export async function reverseGeocode(lat: number, lon: number) {
   try {
     const response = await fetch(
@@ -141,10 +121,7 @@ export async function reverseGeocode(lat: number, lon: number) {
   }
 }
 
-/**
- * Get user's IP-based location
- * Using ipapi.co (free, no auth required)
- */
+/** IP-based location via ipapi.co. */
 export async function getIPLocation() {
   try {
     const response = await fetch('https://ipapi.co/json/');
@@ -163,10 +140,7 @@ export async function getIPLocation() {
   }
 }
 
-/**
- * GeoJS - Simple IP geolocation
- * No API key, completely free
- */
+/** IP-based location via GeoJS. */
 export async function getIPLocationGeoJS() {
   try {
     const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
@@ -189,10 +163,7 @@ export async function getIPLocationGeoJS() {
 // TRANSLATION SERVICES
 // ==============================================
 
-/**
- * LibreTranslate - Free, open-source translation
- * Because we connect people across ALL languages
- */
+/** LibreTranslate translation endpoint. */
 export async function translateText(
   text: string,
   targetLang: string,
@@ -220,9 +191,7 @@ export async function translateText(
   }
 }
 
-/**
- * Get supported languages
- */
+/** Retrieve supported translation languages. */
 export async function getSupportedLanguages() {
   try {
     const response = await fetch('https://libretranslate.com/languages');
@@ -233,11 +202,7 @@ export async function getSupportedLanguages() {
   }
 }
 
-/**
- * MyMemory Translation API
- * Free tier: 10,000 words/day (higher with email registration)
- * Fallback option for translation
- */
+/** MyMemory translation fallback. */
 export async function translateTextMyMemory(
   text: string,
   targetLang: string,
@@ -268,10 +233,7 @@ export async function translateTextMyMemory(
 // USER VERIFICATION & IDENTITY
 // ==============================================
 
-/**
- * Get Gravatar URL by email
- * Shows profile picture if user has one
- */
+/** Generate a Gravatar URL from an email address. */
 export async function getGravatarUrl(email: string, size: number = 200): Promise<string> {
   const crypto = (await import('crypto')).default || await import('crypto');
   const hash = crypto
@@ -281,19 +243,13 @@ export async function getGravatarUrl(email: string, size: number = 200): Promise
   return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
 }
 
-/**
- * Verify email format and basic validation
- */
+/** Basic email format validation. */
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-/**
- * Hunter.io Email Verification
- * Verify if an email exists and is deliverable
- * Free tier: 25 searches/month
- */
+/** Hunter.io email verification helper. */
 export async function verifyEmailHunter(email: string) {
   const apiKey = process.env.HUNTER_API_KEY;
   if (!apiKey) {
@@ -329,10 +285,7 @@ export async function verifyEmailHunter(email: string) {
 // REAL ESTATE & HOUSING DATA
 // ==============================================
 
-/**
- * Get nearby buildings using Overpass API (OpenStreetMap)
- * For finding properties and housing data
- */
+/** Query nearby buildings via OpenStreetMap Overpass. */
 export async function getNearbyBuildings(
   lat: number,
   lon: number,
@@ -376,11 +329,7 @@ export async function getNearbyBuildings(
   }
 }
 
-/**
- * Zillow API (via RapidAPI)
- * Search real estate listings
- * Free tier available through RapidAPI
- */
+/** Zillow listings via RapidAPI. */
 export async function searchZillowListings(location: string, page: number = 1) {
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) {
@@ -407,11 +356,7 @@ export async function searchZillowListings(location: string, page: number = 1) {
   }
 }
 
-/**
- * UK Land Registry - Price Paid Data
- * Free official property sales data for UK
- * No API key needed - public CSV data
- */
+/** Placeholder for UK Land Registry price paid data. */
 export async function getUKPropertySales(postcode: string) {
   try {
     // This would connect to UK Land Registry open data
@@ -432,11 +377,7 @@ export async function getUKPropertySales(postcode: string) {
 // MEDIA & ASSETS
 // ==============================================
 
-/**
- * Unsplash API - High-quality free images
- * For profile backgrounds, property photos, etc.
- * Free tier: 50 requests/hour
- */
+/** Unsplash image search helper. */
 export async function searchUnsplashImages(query: string, perPage: number = 10) {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
@@ -476,9 +417,7 @@ export async function searchUnsplashImages(query: string, perPage: number = 10) 
   }
 }
 
-/**
- * Get random Unsplash image for backgrounds
- */
+/** Fetch a random Unsplash image for a category. */
 export async function getRandomUnsplashImage(category: string = 'nature') {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) return null;
@@ -512,18 +451,12 @@ export async function getRandomUnsplashImage(category: string = 'nature') {
 // COLLABORATION & TRANSPARENCY DATA
 // ==============================================
 
-/**
- * Generate QR code for profile/invite sharing
- * Using goqr.me API (free, no auth)
- */
+/** Generate a QR code URL for sharing data. */
 export function generateQRCode(data: string, size: number = 200): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
 }
 
-/**
- * Get company data from OpenCorporates
- * For transparency when dealing with insurance companies
- */
+/** Fetch company data from OpenCorporates. */
 export async function getCompanyData(companyName: string, jurisdiction?: string) {
   try {
     let url = `https://api.opencorporates.com/v0.4/companies/search?q=${encodeURIComponent(companyName)}`;
@@ -566,9 +499,7 @@ export async function getCompanyData(companyName: string, jurisdiction?: string)
 // UTILITY FUNCTIONS
 // ==============================================
 
-/**
- * Get public IP address
- */
+/** Fetch the public IP address. */
 export async function getPublicIP(): Promise<string | null> {
   try {
     const response = await fetch('https://api.ipify.org?format=json');
@@ -580,10 +511,7 @@ export async function getPublicIP(): Promise<string | null> {
   }
 }
 
-/**
- * Calculate distance between two coordinates (Haversine formula)
- * Returns distance in kilometers
- */
+/** Calculate distance between two coordinates (Haversine). */
 export function calculateDistance(
   lat1: number,
   lon1: number,
@@ -607,9 +535,7 @@ function toRad(degrees: number): number {
   return degrees * (Math.PI / 180);
 }
 
-/**
- * Rate limiting helper for API calls
- */
+/** Rate limiting helper for API calls. */
 export class RateLimiter {
   private calls: number[] = [];
 
