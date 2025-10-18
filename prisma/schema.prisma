@@ -22,6 +22,10 @@ model User {
   name          String?
   image         String?
 
+  // Email verification tokens
+  emailVerificationToken   String?   @unique
+  emailVerificationExpires DateTime?
+
   // Transparency fields - show when account was created
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

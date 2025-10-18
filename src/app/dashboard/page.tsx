@@ -3,12 +3,19 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { verified?: string }
+}) {
   const session = await auth()
 
   if (!session?.user) {
     redirect("/auth/signin")
   }
+
+  // Handle verification status
+  const verificationStatus = searchParams.verified;
 
   // Fetch user profile with stats
   const profile = await prisma.profile.findUnique({
@@ -67,6 +74,35 @@ export default async function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Verification Status Messages */}
+        {verificationStatus === 'success' && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-start">
+              <span className="text-2xl mr-3">🎉</span>
+              <div>
+                <h3 className="font-semibold text-green-900">Email Verified!</h3>
+                <p className="text-green-700 text-sm">
+                  Your account is now verified. Welcome to CollabConnect!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {verificationStatus === 'already' && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start">
+              <span className="text-2xl mr-3">ℹ️</span>
+              <div>
+                <h3 className="font-semibold text-blue-900">Already Verified</h3>
+                <p className="text-blue-700 text-sm">
+                  Your email was already verified. You're all set!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

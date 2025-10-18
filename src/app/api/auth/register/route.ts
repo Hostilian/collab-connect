@@ -1,3 +1,4 @@
+import { sendVerificationEmail } from "@/lib/email"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import { NextResponse } from "next/server"
@@ -46,8 +47,19 @@ export async function POST(request: Request) {
       },
     })
 
+    // Send verification email
+    try {
+      await sendVerificationEmail(user.id, user.email, user.name || 'there');
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail registration if email fails - user can request resend
+    }
+
     return NextResponse.json(
-      { message: "User created successfully", userId: user.id },
+      {
+        message: "User created successfully. Please check your email to verify your account.",
+        userId: user.id
+      },
       { status: 201 }
     )
   } catch (error) {
