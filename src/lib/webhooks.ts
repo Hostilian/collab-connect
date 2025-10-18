@@ -26,7 +26,7 @@ export enum WebhookEvent {
 export interface WebhookPayload {
   event: WebhookEvent;
   timestamp: string;
-  data: any;
+  data: Record<string, unknown>;
   webhookId: string;
   deliveryId: string;
 }
@@ -142,7 +142,7 @@ export async function rotateWebhookSecret(webhookId: string) {
  */
 export async function triggerWebhook(
   event: WebhookEvent,
-  data: any
+  data: Record<string, unknown>
 ): Promise<void> {
   // Find all active webhooks subscribed to this event
   const webhooks = await prisma.webhook.findMany({
@@ -168,7 +168,7 @@ export async function triggerWebhook(
 async function deliverWebhook(
   webhookId: string,
   event: WebhookEvent,
-  data: any
+  data: Record<string, unknown>
 ): Promise<void> {
   const webhook = await prisma.webhook.findUnique({
     where: { id: webhookId },

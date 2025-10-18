@@ -32,8 +32,18 @@ export interface NotificationData {
   title: string;
   message: string;
   link?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   priority?: NotificationPriority;
+}
+
+interface NotificationPreferences {
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+  pushEnabled: boolean;
+  quietHoursEnabled: boolean;
+  quietHoursStart?: number | null;
+  quietHoursEnd?: number | null;
+  [key: string]: boolean | number | null | undefined;
 }
 
 /**
@@ -182,7 +192,7 @@ export async function updateNotificationPreferences(
  */
 function isNotificationEnabled(
   type: NotificationType,
-  preferences: any
+  preferences: NotificationPreferences
 ): boolean {
   const mapping: Record<NotificationType, string> = {
     [NotificationType.NEW_MATCH]: 'newMatch',
@@ -203,7 +213,7 @@ function isNotificationEnabled(
 /**
  * Check if it's currently quiet hours for the user
  */
-function isQuietHours(preferences: any): boolean {
+function isQuietHours(preferences: NotificationPreferences): boolean {
   if (!preferences.quietHoursEnabled) {
     return false;
   }
@@ -226,7 +236,7 @@ function isQuietHours(preferences: any): boolean {
  */
 function shouldSendEmail(
   type: NotificationType,
-  preferences: any
+  _preferences: NotificationPreferences
 ): boolean {
   // Only send email for important notifications
   const emailTypes = [
@@ -245,7 +255,7 @@ function shouldSendEmail(
  */
 function shouldSendPush(
   type: NotificationType,
-  preferences: any
+  _preferences: NotificationPreferences
 ): boolean {
   // Send push for most notifications except profile views
   return type !== NotificationType.PROFILE_VIEW;
@@ -293,8 +303,8 @@ function generateEmailHTML(title: string, message: string, link?: string): strin
  */
 async function sendPushNotification(
   userId: string,
-  payload: { title: string; body: string; data?: any }
-) {
+  payload: { title: string; body: string; data?: Record<string, unknown> }
+): Promise<void> {
   // TODO: Implement Web Push API
   // This would require storing push subscriptions and using web-push library
   console.log('Push notification:', userId, payload);

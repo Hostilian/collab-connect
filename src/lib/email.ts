@@ -79,29 +79,27 @@ export async function sendEmail(options: {
     subject: string;
     text?: string;
     html?: string;
-}) {
+}): Promise<void> {
     try {
-        const emailData: any = {
+        const emailPayload = {
             from: 'CollabConnect <notifications@collabconnect.com>',
             to: options.to,
             subject: options.subject,
+            ...(options.html ? { html: options.html } : {}),
+            ...(options.text ? { text: options.text } : {}),
         };
 
-        if (options.html) {
-            emailData.html = options.html;
-        }
-        if (options.text) {
-            emailData.text = options.text;
-        }
+        // Ensure at least text or html is provided
+        const finalPayload = emailPayload.html || emailPayload.text
+            ? emailPayload
+            : { ...emailPayload, text: options.subject };
 
-        const { data, error } = await resend.emails.send(emailData);
+        const { error } = await resend.emails.send(finalPayload as { from: string; to: string; subject: string; html?: string; text: string });
 
         if (error) {
             logger.error('Email send error', { error: String(error) });
             throw new Error('Failed to send email');
         }
-
-        return { success: true, data };
     } catch (_error) {
         logger.error('Send email error', { error: String(_error) });
         throw _error;

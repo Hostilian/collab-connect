@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const webhooks = await getUserWebhooks(session.user.id);
 
     // Don't expose secrets in response
-    const safeWebhooks = webhooks.map((webhook: any) => ({
+    const safeWebhooks = webhooks.map((webhook: { secret: string; [key: string]: unknown }) => ({
       ...webhook,
       secret: undefined,
       secretPreview: webhook.secret.substring(0, 8) + '...',
