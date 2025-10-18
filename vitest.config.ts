@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
-    exclude: ['e2e/**'],
+    exclude: ['e2e/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
@@ -31,6 +31,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'react-map-gl/maplibre': path.resolve(__dirname, 'node_modules/react-map-gl/dist/maplibre.js'),
       'react-map-gl': path.resolve(__dirname, 'node_modules/react-map-gl'),
     },
   },

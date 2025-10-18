@@ -7,7 +7,6 @@ function log(level: LogLevel, message: string, meta?: Record<string, unknown>) {
     timestamp: new Date().toISOString(),
     ...meta,
   }
-  // eslint-disable-next-line no-console
   console[level === 'debug' ? 'log' : level](JSON.stringify(entry))
 }
 

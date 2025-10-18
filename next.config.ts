@@ -21,12 +21,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Sentry configuration
-  sentry: {
-    hideSourceMaps: true,
-    widenClientFileUpload: true,
-  },
-
   // Security headers
   async headers() {
     const securityHeaders = [
@@ -57,6 +51,8 @@ const sentryWebpackPluginOptions = {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
+  hideSourceMaps: true,
+  widenClientFileUpload: true,
 };
 
 // Export the config wrapped with Sentry
