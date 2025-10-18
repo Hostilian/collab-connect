@@ -1,5 +1,10 @@
 # CollabConnect 🤝
 
+[![CI](https://github.com/Hostilian/collab-connect/actions/workflows/ci.yml/badge.svg)](https://github.com/Hostilian/collab-connect/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Hostilian/collab-connect/actions/workflows/codeql.yml/badge.svg)](https://github.com/Hostilian/collab-connect/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/Hostilian/collab-connect/branch/main/graph/badge.svg)](https://codecov.io/gh/Hostilian/collab-connect)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **The platform that connects people to fight back against big institutions and collaborate on life's biggest challenges.**
 
 ## The Vision
@@ -100,6 +105,27 @@ See `.env.example` for required variables:
 - `NEXTAUTH_URL` - Your app URL
 - `NEXTAUTH_SECRET` - Auth secret key
 - `MAPBOX_API_KEY` - For map functionality (or alternative map provider)
+
+For detailed secrets documentation, see [SECRETS.md](./SECRETS.md).
+
+## Available Scripts
+
+```bash
+npm run dev         # Start development server
+npm run build       # Build for production
+npm start           # Start production server
+npm run lint        # Run ESLint
+npm run typecheck   # Run TypeScript checks
+npm test            # Run tests
+npm run test:coverage  # Run tests with coverage
+npm run ci          # Run all CI checks locally
+```
+
+## Documentation
+
+- [Development Guide](./DEVELOPMENT.md) - Local setup, testing, and workflows
+- [Secrets Management](./SECRETS.md) - Environment variables and CI/CD secrets
+- [Contributing Guidelines](./.github/PULL_REQUEST_TEMPLATE.md) - PR template and guidelines
 
 ## Development Roadmap
 
