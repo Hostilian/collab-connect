@@ -1,4 +1,5 @@
 import WelcomeEmail from '@/emails/WelcomeEmail';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
                 }),
             });
         } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
+            logger.error('Failed to send welcome email', { error: String(emailError) });
             // Don't fail verification if welcome email fails
         }
 
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
             new URL('/dashboard?verified=success', request.url)
         );
     } catch (_error) {
-        console.error('Email verification error:', _error);
+        logger.error('Email verification error', { error: String(_error) });
         return NextResponse.json(
             { error: 'Failed to verify email' },
             { status: 500 }

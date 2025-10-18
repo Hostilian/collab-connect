@@ -1,4 +1,5 @@
 import VerificationEmail from '@/emails/VerificationEmail';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 import { Resend } from 'resend';
@@ -36,13 +37,13 @@ export async function sendVerificationEmail(userId: string, email: string, name:
         });
 
         if (error) {
-            console.error('Resend error:', error);
+            logger.error('Resend error', { error: String(error) });
             throw new Error('Failed to send verification email');
         }
 
         return { success: true, data };
     } catch (_error) {
-        console.error('Send verification email error:', _error);
+        logger.error('Send verification email error', { error: String(_error) });
         throw _error;
     }
 }
@@ -65,7 +66,7 @@ export async function resendVerificationEmail(email: string) {
         // Send new verification email
         return await sendVerificationEmail(user.id, user.email, user.name || 'there');
     } catch (_error) {
-        console.error('Resend verification email error:', _error);
+        logger.error('Resend verification email error', { error: String(_error) });
         throw _error;
     }
 }

@@ -1,4 +1,5 @@
 // API endpoint to serve user locations for the map
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { getClientId, getRateLimitHeaders, rateLimiters } from '@/lib/ratelimit';
 import { NextResponse } from 'next/server';
@@ -135,7 +136,7 @@ export async function GET(request: Request) {
             },
         });
     } catch (error) {
-        console.error('Map API error:', error);
+        logger.error('Map API error', { error: String(error) });
         return NextResponse.json(
             { error: 'Failed to fetch map data' },
             { status: 500 }
