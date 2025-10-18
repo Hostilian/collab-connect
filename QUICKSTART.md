@@ -18,7 +18,7 @@ choco install postgresql
 - Create a free PostgreSQL database
 - Copy the connection string
 
-### Step 2: Create your .env file
+### Step 2: Create your .env fileeeee
 
 ```cmd
 copy .env.example .env
