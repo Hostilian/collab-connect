@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(
             new URL('/dashboard?verified=success', request.url)
         );
-    } catch (error) {
-        console.error('Email verification error:', error);
+    } catch (_error) {
+        console.error('Email verification error:', _error);
         return NextResponse.json(
             { error: 'Failed to verify email' },
             { status: 500 }

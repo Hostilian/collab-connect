@@ -49,7 +49,7 @@ describe('Auth API Routes', () => {
         lastLoginAt: null,
       });
 
-      const mockRequest = {
+      const _mockRequest = {
         json: async () => ({
           name: 'Test User',
           email: 'test@example.com',
@@ -167,19 +167,19 @@ describe('Map API Routes', () => {
     });
 
     it('should handle pagination correctly', async () => {
-      const mockRequest = new Request('http://localhost/api/map/users?page=2&limit=10');
+  const _mockRequest = new Request('http://localhost/api/map/users?page=2&limit=10');
 
       // Test would verify pagination logic
-      expect(mockRequest.url).toContain('page=2');
+  expect(_mockRequest.url).toContain('page=2');
     });
 
     it('should filter by location bounds', async () => {
-      const mockRequest = new Request(
+      const _mockRequest = new Request(
         'http://localhost/api/map/users?minLat=40&maxLat=50&minLng=-10&maxLng=10'
       );
 
       // Test would verify bounds filtering
-      expect(mockRequest.url).toContain('minLat');
+      expect(_mockRequest.url).toContain('minLat');
     });
   });
 });

@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         const skip = (page - 1) * limit;
 
         // Filter parameters
-        const verificationLevel = searchParams.get('verificationLevel'); // 'verified', 'pending', 'unverified'
+    const verifiedFilter = searchParams.get('verified'); // 'true' | 'false'
         const minLat = parseFloat(searchParams.get('minLat') || '-90');
         const maxLat = parseFloat(searchParams.get('maxLat') || '90');
         const minLng = parseFloat(searchParams.get('minLng') || '-180');
@@ -22,9 +22,9 @@ export async function GET(request: Request) {
         type WhereClause = {
             profile?: {
                 isNot: null;
-                AND: Array<{ latitude?: { gte: number; lte: number }; longitude?: { gte: number; lte: number } }>;
+                AND: Array<{ latitude?: { gte: number; lte: number } | undefined; longitude?: { gte: number; lte: number } | undefined }>;
+                isVerified?: boolean;
             };
-            verificationLevel?: string;
         };
 
         const where: WhereClause = {
@@ -38,8 +38,10 @@ export async function GET(request: Request) {
         };
 
         // Add verification filter if specified
-        if (verificationLevel) {
-            where.verificationLevel = verificationLevel;
+        if (verifiedFilter === 'true') {
+            where.profile = { ...(where.profile as NonNullable<WhereClause['profile']>), isVerified: true };
+        } else if (verifiedFilter === 'false') {
+            where.profile = { ...(where.profile as NonNullable<WhereClause['profile']>), isVerified: false };
         }
 
         // Fetch users with location data
@@ -50,22 +52,23 @@ export async function GET(request: Request) {
             select: {
                 id: true,
                 name: true,
-                verificationLevel: true,
                 profile: {
                     select: {
                         bio: true,
                         latitude: true,
                         longitude: true,
-                        city: true,
-                        state: true,
+                        location: true,
+                        isVerified: true,
+                        verifiedAt: true,
                     },
                 },
-                collaborationsInitiated: {
+                collaborations: {
                     take: 1,
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: { joinedAt: 'desc' },
                     select: {
-                        title: true,
-                        createdAt: true,
+                        collaboration: {
+                            select: { title: true, createdAt: true },
+                        },
                     },
                 },
             },
@@ -79,21 +82,24 @@ export async function GET(request: Request) {
 
         // Transform data for map display
         const mapUsers = users
-            .filter((user: UserWithProfile) => user.profile?.latitude && user.profile?.longitude)
-            .map((user: UserWithProfile) => ({
-                id: user.id,
-                name: user.name || 'Anonymous User',
-                latitude: user.profile!.latitude,
-                longitude: user.profile!.longitude,
-                bio: user.profile!.bio || 'No bio yet',
-                verificationLevel: user.verificationLevel || 'unverified',
-                location: user.profile!.city && user.profile!.state
-                    ? `${user.profile!.city}, ${user.profile!.state}`
-                    : null,
-                lastCollaboration: user.collaborationsInitiated[0]
-                    ? `${user.collaborationsInitiated[0].title} • ${new Date(user.collaborationsInitiated[0].createdAt).toLocaleDateString()}`
-                    : null,
-            }));
+            .filter((user: UserWithProfile) => user.profile?.latitude != null && user.profile?.longitude != null)
+            .map((user: UserWithProfile) => {
+                const lastMember = user.collaborations[0];
+                const lastTitle = lastMember?.collaboration?.title;
+                const lastDate = lastMember?.collaboration?.createdAt;
+                return {
+                    id: user.id,
+                    name: user.name || 'Anonymous User',
+                    latitude: user.profile!.latitude!,
+                    longitude: user.profile!.longitude!,
+                    bio: user.profile!.bio || 'No bio yet',
+                    verified: user.profile!.isVerified,
+                    location: user.profile!.location || null,
+                    lastCollaboration: lastTitle && lastDate
+                        ? `${lastTitle} • ${new Date(lastDate).toLocaleDateString()}`
+                        : null,
+                };
+            });
 
         return NextResponse.json({
             users: mapUsers,

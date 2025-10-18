@@ -41,9 +41,9 @@ export async function sendVerificationEmail(userId: string, email: string, name:
         }
 
         return { success: true, data };
-    } catch (error) {
-        console.error('Send verification email error:', error);
-        throw error;
+    } catch (_error) {
+        console.error('Send verification email error:', _error);
+        throw _error;
     }
 }
 
@@ -64,8 +64,8 @@ export async function resendVerificationEmail(email: string) {
 
         // Send new verification email
         return await sendVerificationEmail(user.id, user.email, user.name || 'there');
-    } catch (error) {
-        console.error('Resend verification email error:', error);
-        throw error;
+    } catch (_error) {
+        console.error('Resend verification email error:', _error);
+        throw _error;
     }
 }
