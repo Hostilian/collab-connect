@@ -12,6 +12,7 @@ import Map, {
     type ViewState,
     type ViewStateChangeEvent,
 } from 'react-map-gl/maplibre';
+import Supercluster from 'supercluster';
 
 // Represents a collaborator from the database.
 interface MapUser {
@@ -24,6 +25,13 @@ interface MapUser {
     lastCollaboration?: string | null;
     location?: string | null;
 }
+
+// GeoJSON point feature for supercluster
+type PointFeature = GeoJSON.Feature<GeoJSON.Point, MapUser>;
+
+// Cluster or point from supercluster
+type ClusterFeature = Supercluster.ClusterFeature<MapUser>;
+type ClusterOrPoint = PointFeature | ClusterFeature;
 
 // Placeholder data when database is not available
 const placeholderUsers: MapUser[] = [
@@ -99,6 +107,42 @@ export default function InteractiveMap(): ReactElement {
         fetchUsers();
     }, []);
 
+    // Create supercluster index
+    const { supercluster, points } = useMemo(() => {
+        const cluster = new Supercluster<MapUser>({
+            radius: 75,
+            maxZoom: 20,
+            minZoom: 0,
+        });
+
+        const geoJsonPoints: PointFeature[] = users.map(user => ({
+            type: 'Feature',
+            properties: user,
+            geometry: {
+                type: 'Point',
+                coordinates: [user.longitude, user.latitude],
+            },
+        }));
+
+        cluster.load(geoJsonPoints);
+
+        return { supercluster: cluster, points: geoJsonPoints };
+    }, [users]);
+
+    // Get clusters for current viewport
+    const clusters = useMemo(() => {
+        if (!supercluster || users.length === 0) return [];
+
+        const bounds: [number, number, number, number] = [
+            viewState.longitude - 360 / Math.pow(2, viewState.zoom),
+            viewState.latitude - 180 / Math.pow(2, viewState.zoom),
+            viewState.longitude + 360 / Math.pow(2, viewState.zoom),
+            viewState.latitude + 180 / Math.pow(2, viewState.zoom),
+        ];
+
+        return supercluster.getClusters(bounds, Math.floor(viewState.zoom));
+    }, [supercluster, viewState.longitude, viewState.latitude, viewState.zoom, users.length]);
+
     const mapStyle = useMemo(
         () => `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`,
         [mapTilerKey]
@@ -153,25 +197,65 @@ export default function InteractiveMap(): ReactElement {
                 <NavigationControl position="top-right" />
                 <ScaleControl position="bottom-left" />
 
-                {users.map(user => (
-                    <Marker
-                        key={user.id}
-                        longitude={user.longitude}
-                        latitude={user.latitude}
-                        onClick={(event: MarkerEvent<MouseEvent>) => {
-                            event.originalEvent.stopPropagation();
-                            setPopupInfo(user);
-                        }}
-                    >
-                        <span
-                            className={`inline-flex h-4 w-4 -translate-y-2 items-center justify-center rounded-full border-2 border-white shadow ${statusColor(
-                                user.verificationLevel
-                            )}`}
+                {clusters.map((cluster) => {
+                    const [longitude, latitude] = cluster.geometry.coordinates;
+                    const { cluster: isCluster, point_count: pointCount } = cluster.properties as any;
+
+                    if (isCluster) {
+                        // Render cluster marker
+                        return (
+                            <Marker
+                                key={`cluster-${cluster.id}`}
+                                longitude={longitude}
+                                latitude={latitude}
+                                onClick={(event: MarkerEvent<MouseEvent>) => {
+                                    event.originalEvent.stopPropagation();
+
+                                    // Get expansion zoom and fly to cluster
+                                    const expansionZoom = Math.min(
+                                        supercluster.getClusterExpansionZoom(cluster.id as number),
+                                        20
+                                    );
+
+                                    setViewState({
+                                        ...viewState,
+                                        longitude,
+                                        latitude,
+                                        zoom: expansionZoom,
+                                    });
+                                }}
+                            >
+                                <div
+                                    className="flex h-12 w-12 -translate-y-6 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-indigo-600 text-white shadow-lg transition-transform hover:scale-110"
+                                >
+                                    <span className="text-sm font-bold">{pointCount}</span>
+                                </div>
+                            </Marker>
+                        );
+                    }
+
+                    // Render individual user marker
+                    const user = cluster.properties as MapUser;
+                    return (
+                        <Marker
+                            key={`user-${user.id}`}
+                            longitude={longitude}
+                            latitude={latitude}
+                            onClick={(event: MarkerEvent<MouseEvent>) => {
+                                event.originalEvent.stopPropagation();
+                                setPopupInfo(user);
+                            }}
                         >
-                            <span className="sr-only">Collab user marker</span>
-                        </span>
-                    </Marker>
-                ))}
+                            <span
+                                className={`inline-flex h-4 w-4 -translate-y-2 cursor-pointer items-center justify-center rounded-full border-2 border-white shadow transition-transform hover:scale-125 ${statusColor(
+                                    user.verificationLevel
+                                )}`}
+                            >
+                                <span className="sr-only">Collab user marker</span>
+                            </span>
+                        </Marker>
+                    );
+                })}
 
                 {popupInfo && (
                     <Popup
