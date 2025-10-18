@@ -245,20 +245,17 @@ export async function cachedQuery<T>(
 export async function getCacheStats(): Promise<{
   isConfigured: boolean;
   keyCount?: number;
-  memory?: string;
 }> {
   if (!redis) {
     return { isConfigured: false };
   }
 
   try {
-    const info = await redis.info();
     const keys = await redis.dbsize();
 
     return {
       isConfigured: true,
       keyCount: keys,
-      memory: info,
     };
   } catch (error) {
     console.error('Cache stats error:', error);
@@ -267,3 +264,4 @@ export async function getCacheStats(): Promise<{
 }
 
 export { redis };
+
