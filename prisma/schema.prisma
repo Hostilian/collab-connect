@@ -26,6 +26,11 @@ model User {
   emailVerificationToken   String?   @unique
   emailVerificationExpires DateTime?
 
+  // Two-Factor Authentication
+  twoFactorEnabled Boolean   @default(false)
+  twoFactorSecret  String?   // TOTP secret
+  backupCodes      String[]  // Encrypted backup codes
+
   // Transparency fields - show when account was created
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

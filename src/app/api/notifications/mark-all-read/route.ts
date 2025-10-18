@@ -3,11 +3,11 @@
  * POST /api/notifications/mark-all-read - Mark all notifications as read
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { markAllAsRead } from '@/lib/notifications';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

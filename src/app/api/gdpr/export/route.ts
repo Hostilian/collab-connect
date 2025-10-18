@@ -3,12 +3,12 @@
  * POST /api/gdpr/export - Export all user data
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { logAudit } from '@/lib/audit';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { logAudit } from '@/lib/audit';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

@@ -4,11 +4,11 @@
  * PATCH /api/notifications/preferences - Update notification preferences
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/notifications';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

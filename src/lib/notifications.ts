@@ -142,7 +142,7 @@ export async function sendNotification(data: NotificationData) {
 /**
  * Get user's notification preferences
  */
-export async function getNotificationPreferences(userId: string) {
+export async function getNotificationPreferences(userId: string): Promise<NotificationPreferences> {
   let preferences = await prisma.notificationPreference.findUnique({
     where: { userId },
   });
@@ -154,7 +154,7 @@ export async function getNotificationPreferences(userId: string) {
     });
   }
 
-  return preferences;
+  return preferences as NotificationPreferences;
 }
 
 /**

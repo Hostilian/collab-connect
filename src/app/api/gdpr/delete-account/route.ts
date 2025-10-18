@@ -3,11 +3,11 @@
  * POST /api/gdpr/delete-account - Delete user account and all associated data
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { logAudit } from '@/lib/audit';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { logAudit } from '@/lib/audit';
 import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {

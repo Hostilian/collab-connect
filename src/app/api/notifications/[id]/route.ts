@@ -4,10 +4,10 @@
  * DELETE /api/notifications/[id] - Delete notification
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { markAsRead, deleteNotification, archiveNotification } from '@/lib/notifications';
+import { archiveNotification, deleteNotification, markAsRead } from '@/lib/notifications';
 import prisma from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(
   request: NextRequest,

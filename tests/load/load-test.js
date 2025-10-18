@@ -25,40 +25,52 @@ export const options = {
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
-export default function () {
+export default function loadTest() {
   // Test homepage
   let res = http.get(`${BASE_URL}/`);
-  check(res, {
+  const homepageCheck = check(res, {
     'homepage status is 200': (r) => r.status === 200,
     'homepage loads in <500ms': (r) => r.timings.duration < 500,
-  }) || errorRate.add(1);
+  });
+  if (!homepageCheck) {
+    errorRate.add(1);
+  }
 
   sleep(1);
 
   // Test API health endpoint
   res = http.get(`${BASE_URL}/api/health`);
-  check(res, {
+  const healthCheck = check(res, {
     'health status is 200': (r) => r.status === 200,
     'health check loads in <100ms': (r) => r.timings.duration < 100,
-  }) || errorRate.add(1);
+  });
+  if (!healthCheck) {
+    errorRate.add(1);
+  }
 
   sleep(1);
 
   // Test map users endpoint
   res = http.get(`${BASE_URL}/api/map/users?limit=50`);
-  check(res, {
+  const mapCheck = check(res, {
     'map users status is 200': (r) => r.status === 200,
     'map users loads in <1s': (r) => r.timings.duration < 1000,
-  }) || errorRate.add(1);
+  });
+  if (!mapCheck) {
+    errorRate.add(1);
+  }
 
   sleep(2);
 
   // Test search endpoint
   res = http.get(`${BASE_URL}/api/search?q=javascript&limit=20`);
-  check(res, {
+  const searchCheck = check(res, {
     'search status is 200': (r) => r.status === 200,
     'search loads in <500ms': (r) => r.timings.duration < 500,
-  }) || errorRate.add(1);
+  });
+  if (!searchCheck) {
+    errorRate.add(1);
+  }
 
   sleep(1);
 }
@@ -71,6 +83,6 @@ export function setup() {
 }
 
 // Teardown function - runs once at the end
-export function teardown(data) {
+export function teardown() {
   console.log('Load test completed');
 }

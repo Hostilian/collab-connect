@@ -31,6 +31,19 @@ export interface WebhookPayload {
   deliveryId: string;
 }
 
+interface WebhookRecord {
+  id: string;
+  userId: string;
+  url: string;
+  secret: string;
+  events: string[];
+  isActive: boolean;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastTriggeredAt: Date | null;
+}
+
 /**
  * Generate HMAC SHA256 signature for webhook verification
  */
@@ -155,7 +168,7 @@ export async function triggerWebhook(
   });
 
   // Trigger delivery for each webhook
-  const deliveryPromises = webhooks.map((webhook: { id: string }) =>
+  const deliveryPromises = webhooks.map((webhook: WebhookRecord) =>
     deliverWebhook(webhook.id, event, data)
   );
 

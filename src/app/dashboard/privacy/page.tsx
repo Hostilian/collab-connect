@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function PrivacySettingsPage() {
   const router = useRouter();
@@ -106,7 +106,7 @@ export default function PrivacySettingsPage() {
             📥 Export Your Data
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Download a complete copy of your personal data in JSON format. This includes your profile, 
+            Download a complete copy of your personal data in JSON format. This includes your profile,
             collaborations, messages, and all activity history.
           </p>
           <button
@@ -143,7 +143,7 @@ export default function PrivacySettingsPage() {
             ⚠️ Danger Zone
           </h2>
           <p className="text-red-700 dark:text-red-300 mb-4">
-            <strong>Delete Account:</strong> This action is permanent and cannot be undone. 
+            <strong>Delete Account:</strong> This action is permanent and cannot be undone.
             All your data, collaborations, and messages will be permanently deleted.
           </p>
           <button
