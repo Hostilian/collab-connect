@@ -11,7 +11,7 @@ export async function GET() {
   try {
     await prisma.$queryRaw`SELECT 1`;
     checks.database = 'ok';
-  } catch (_error) {
+  } catch {
     checks.database = 'error';
     errors.push('Database connection failed');
   }

@@ -1,10 +1,22 @@
 import { sendVerificationEmail } from "@/lib/email"
 import { prisma } from "@/lib/prisma"
+import { createRateLimitResponse, getClientId, rateLimiters } from "@/lib/ratelimit"
 import bcrypt from "bcrypt"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting
+    const identifier = getClientId(request)
+
+    if (rateLimiters.auth) {
+      const { success, limit, reset } = await rateLimiters.auth.limit(identifier)
+
+      if (!success) {
+        return createRateLimitResponse(limit, new Date(reset))
+      }
+    }
+
     const body = await request.json()
     const { email, password, name } = body
 

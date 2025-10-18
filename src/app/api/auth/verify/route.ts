@@ -21,10 +21,8 @@ export async function GET(request: NextRequest) {
         // Find user with this verification token
         const user = await prisma.user.findFirst({
             where: {
-                emailVerificationToken: token,
-                emailVerificationExpires: {
-                    gt: new Date(), // Token hasn't expired
-                },
+                emailVerificationToken: { equals: token },
+                emailVerificationExpires: { gt: new Date() },
             },
         });
 
@@ -47,8 +45,8 @@ export async function GET(request: NextRequest) {
             where: { id: user.id },
             data: {
                 emailVerified: new Date(),
-                emailVerificationToken: null, // Clear token
-                emailVerificationExpires: null,
+                emailVerificationToken: { set: null }, // Clear token
+                emailVerificationExpires: { set: null },
             },
         });
 

@@ -1,9 +1,34 @@
 // API endpoint to serve user locations for the map
 import { prisma } from '@/lib/prisma';
+import { getClientId, getRateLimitHeaders, rateLimiters } from '@/lib/ratelimit';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
     try {
+        // Rate limiting
+        const identifier = getClientId(request);
+
+        if (rateLimiters.map) {
+            const { success, limit, remaining: _remaining, reset } = await rateLimiters.map.limit(identifier);
+
+            if (!success) {
+                const retryAfter = Math.ceil((new Date(reset).getTime() - Date.now()) / 1000);
+                return NextResponse.json(
+                    {
+                        error: 'Too Many Requests',
+                        message: 'Rate limit exceeded. Please try again later.',
+                    },
+                    {
+                        status: 429,
+                        headers: {
+                            'Retry-After': retryAfter.toString(),
+                            ...getRateLimitHeaders(limit, 0, reset),
+                        },
+                    }
+                );
+            }
+        }
+
         const { searchParams } = new URL(request.url);
 
         // Pagination parameters
@@ -19,29 +44,28 @@ export async function GET(request: Request) {
         const maxLng = parseFloat(searchParams.get('maxLng') || '180');
 
         // Build query filters
-        type WhereClause = {
-            profile?: {
-                isNot: null;
-                AND: Array<{ latitude?: { gte: number; lte: number } | undefined; longitude?: { gte: number; lte: number } | undefined }>;
-                isVerified?: boolean;
-            };
+        const profileIs: {
+            AND: [
+                { latitude: { gte: number; lte: number } },
+                { longitude: { gte: number; lte: number } },
+            ];
+            isVerified?: boolean;
+        } = {
+            AND: [
+                { latitude: { gte: minLat, lte: maxLat } },
+                { longitude: { gte: minLng, lte: maxLng } },
+            ],
         };
 
-        const where: WhereClause = {
-            profile: {
-                isNot: null,
-                AND: [
-                    { latitude: { gte: minLat, lte: maxLat } },
-                    { longitude: { gte: minLng, lte: maxLng } },
-                ],
-            },
+        const where = {
+            profile: { is: profileIs },
         };
 
         // Add verification filter if specified
         if (verifiedFilter === 'true') {
-            where.profile = { ...(where.profile as NonNullable<WhereClause['profile']>), isVerified: true };
+            profileIs.isVerified = true;
         } else if (verifiedFilter === 'false') {
-            where.profile = { ...(where.profile as NonNullable<WhereClause['profile']>), isVerified: false };
+            profileIs.isVerified = false;
         }
 
         // Fetch users with location data
@@ -78,7 +102,7 @@ export async function GET(request: Request) {
         const total = await prisma.user.count({ where });
 
         // Define User type from query
-        type UserWithProfile = typeof users[number];
+    type UserWithProfile = typeof users[number];
 
         // Transform data for map display
         const mapUsers = users

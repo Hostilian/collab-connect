@@ -42,7 +42,9 @@ describe('Auth API Routes', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: 'hashed_password',
+        emailVerificationToken: null,
         emailVerified: null,
+        emailVerificationExpires: null,
         image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -73,7 +75,9 @@ describe('Auth API Routes', () => {
         name: 'Existing User',
         email: 'test@example.com',
         password: 'hashed',
+        emailVerificationToken: null,
         emailVerified: new Date(),
+        emailVerificationExpires: null,
         image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -106,7 +110,9 @@ describe('Auth API Routes', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: 'hashed',
+        emailVerificationToken: null,
         emailVerified: null,
+        emailVerificationExpires: null,
         image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -118,7 +124,9 @@ describe('Auth API Routes', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: 'hashed',
+        emailVerificationToken: null,
         emailVerified: new Date(),
+        emailVerificationExpires: null,
         image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -161,7 +169,24 @@ describe('Map API Routes', () => {
         },
       ];
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers[0]);
+      type MockUser = {
+        id: string;
+        name: string | null;
+        email: string;
+        password: string | null;
+        emailVerified: Date | null;
+        image: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        lastLoginAt: Date | null;
+        emailVerificationToken: string | null;
+        emailVerificationExpires: Date | null;
+      };
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        ...mockUsers[0],
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      } as unknown as MockUser);
 
       expect(prisma.user).toBeDefined();
     });

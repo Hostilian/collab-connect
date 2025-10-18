@@ -1,9 +1,21 @@
 import { resendVerificationEmail } from '@/lib/email';
+import { createRateLimitResponse, getClientId, rateLimiters } from '@/lib/ratelimit';
 import { NextRequest, NextResponse } from 'next/server';
 
 // POST /api/auth/resend-verification
 export async function POST(request: NextRequest) {
     try {
+        // Rate limiting - use email limiter (3 per hour)
+        const identifier = getClientId(request);
+
+        if (rateLimiters.email) {
+            const { success, limit, reset } = await rateLimiters.email.limit(identifier);
+
+            if (!success) {
+                return createRateLimitResponse(limit, new Date(reset));
+            }
+        }
+
         const body = await request.json();
         const { email } = body;
 

@@ -16,8 +16,8 @@ export async function sendVerificationEmail(userId: string, email: string, name:
         await prisma.user.update({
             where: { id: userId },
             data: {
-                emailVerificationToken: token,
-                emailVerificationExpires: expires,
+                emailVerificationToken: { set: token },
+                emailVerificationExpires: { set: expires },
             },
         });
 
