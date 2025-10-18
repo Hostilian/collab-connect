@@ -13,6 +13,7 @@ import Map, {
     type ViewStateChangeEvent,
 } from 'react-map-gl/maplibre';
 import Supercluster from 'supercluster';
+import MapSearch, { type MapFilters } from './MapSearch';
 
 // Represents a collaborator from the database.
 interface MapUser {
@@ -76,8 +77,13 @@ export default function InteractiveMap(): ReactElement {
 
     const [popupInfo, setPopupInfo] = useState<MapUser | null>(null);
     const [users, setUsers] = useState<MapUser[]>(placeholderUsers);
+    const [allUsers, setAllUsers] = useState<MapUser[]>(placeholderUsers);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [filters, setFilters] = useState<MapFilters>({
+        searchQuery: '',
+        verificationLevel: 'all',
+    });
 
     const mapTilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY || 'YOUR_MAPTILER_KEY';
 
@@ -92,6 +98,7 @@ export default function InteractiveMap(): ReactElement {
                 }
                 const data = await response.json();
                 if (data.users && data.users.length > 0) {
+                    setAllUsers(data.users);
                     setUsers(data.users);
                 }
                 setError(null);
@@ -106,6 +113,37 @@ export default function InteractiveMap(): ReactElement {
 
         fetchUsers();
     }, []);
+
+    // Apply filters
+    useEffect(() => {
+        let filtered = [...allUsers];
+
+        // Filter by verification level
+        if (filters.verificationLevel && filters.verificationLevel !== 'all') {
+            filtered = filtered.filter(user => user.verificationLevel === filters.verificationLevel);
+        }
+
+        // Filter by search query
+        if (filters.searchQuery) {
+            const query = filters.searchQuery.toLowerCase();
+            filtered = filtered.filter(
+                user =>
+                    user.name.toLowerCase().includes(query) ||
+                    user.bio.toLowerCase().includes(query) ||
+                    user.location?.toLowerCase().includes(query)
+            );
+        }
+
+        setUsers(filtered);
+    }, [filters, allUsers]);
+
+    const handleSearch = (query: string) => {
+        // Search is handled by the filter effect
+    };
+
+    const handleFilterChange = (newFilters: MapFilters) => {
+        setFilters(newFilters);
+    };
 
     // Create supercluster index
     const { supercluster, points } = useMemo(() => {
@@ -185,6 +223,13 @@ export default function InteractiveMap(): ReactElement {
 
     return (
         <div className="relative h-full w-full">
+            {/* Search and Filter Component */}
+            <MapSearch
+                onSearch={handleSearch}
+                onFilterChange={handleFilterChange}
+                currentFilters={filters}
+            />
+
             <Map
                 {...viewState}
                 onMove={(evt: ViewStateChangeEvent) => setViewState(evt.viewState)}
@@ -307,7 +352,7 @@ export default function InteractiveMap(): ReactElement {
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">
                     Each pulse is a group fighting insurance denials or pooling resources to buy homes together. Zoom in to
-                    discover allies, trusted collaborators, and active bids.
+                    discover allies, trusted collaborators, and active bids. Click clusters to expand.
                 </p>
                 <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
                     <div className="flex items-center gap-2">
@@ -315,6 +360,12 @@ export default function InteractiveMap(): ReactElement {
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="inline-block h-3 w-3 rounded-full bg-amber-400" /> Pending verification
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[9px] font-bold text-white">
+                            N
+                        </span>
+                        Clusters
                     </div>
                 </div>
                 {error && (
