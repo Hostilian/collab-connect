@@ -69,3 +69,20 @@ prisma/migrations/
 
 # turbopack
 .turbo
+
+# CI
+.github/
+.circleci/
+.gitlab/
+
+# test results
+coverage/
+coverage-final.json
+test-results/
+
+# build artifacts
+.vercel_build_output/
+
+# Jenkins
+jenkins*
+Jenkinsfile

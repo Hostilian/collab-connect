@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "ci": "npm run lint && npm run typecheck && npm run test:coverage"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.0",
@@ -47,6 +51,8 @@
     "prisma": "^6.17.1",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^1.4.2",
+    "c8": "^8.0.0"
   }
 }
