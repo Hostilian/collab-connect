@@ -19,7 +19,15 @@ export async function GET(request: Request) {
         const maxLng = parseFloat(searchParams.get('maxLng') || '180');
 
         // Build query filters
-        const where: any = {
+        type WhereClause = {
+            profile?: {
+                isNot: null;
+                AND: Array<{ latitude?: { gte: number; lte: number }; longitude?: { gte: number; lte: number } }>;
+            };
+            verificationLevel?: string;
+        };
+
+        const where: WhereClause = {
             profile: {
                 isNot: null,
                 AND: [
@@ -66,18 +74,21 @@ export async function GET(request: Request) {
         // Count total matching users for pagination
         const total = await prisma.user.count({ where });
 
+        // Define User type from query
+        type UserWithProfile = typeof users[number];
+
         // Transform data for map display
         const mapUsers = users
-            .filter((user: any) => user.profile?.latitude && user.profile?.longitude)
-            .map((user: any) => ({
+            .filter((user: UserWithProfile) => user.profile?.latitude && user.profile?.longitude)
+            .map((user: UserWithProfile) => ({
                 id: user.id,
                 name: user.name || 'Anonymous User',
-                latitude: user.profile.latitude,
-                longitude: user.profile.longitude,
-                bio: user.profile.bio || 'No bio yet',
+                latitude: user.profile!.latitude,
+                longitude: user.profile!.longitude,
+                bio: user.profile!.bio || 'No bio yet',
                 verificationLevel: user.verificationLevel || 'unverified',
-                location: user.profile.city && user.profile.state
-                    ? `${user.profile.city}, ${user.profile.state}`
+                location: user.profile!.city && user.profile!.state
+                    ? `${user.profile!.city}, ${user.profile!.state}`
                     : null,
                 lastCollaboration: user.collaborationsInitiated[0]
                     ? `${user.collaborationsInitiated[0].title} • ${new Date(user.collaborationsInitiated[0].createdAt).toLocaleDateString()}`
