@@ -4,7 +4,7 @@
  * GET /api/translate/languages - Get supported languages
  */
 
-import { getSupportedLanguages, translateText } from '@/lib/api-integrations';
+import { getSupportedLanguages, translateText, translateTextMyMemory } from '@/lib/api-integrations';
 import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -25,13 +25,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const translatedText = await translateText(text, targetLang, sourceLang);
+    // Try LibreTranslate first
+    let translatedText = await translateText(text, targetLang, sourceLang);
+    let service = 'LibreTranslate';
+
+    // If translation failed or returned original, try MyMemory fallback
+    if (translatedText === text && sourceLang !== targetLang) {
+      translatedText = await translateTextMyMemory(
+        text,
+        targetLang,
+        sourceLang === 'auto' ? 'en' : sourceLang
+      );
+      service = 'MyMemory';
+    }
 
     return NextResponse.json({
       original: text,
       translated: translatedText,
       sourceLang,
       targetLang,
+      service,
     });
   } catch (error) {
     console.error('Translation error:', error);

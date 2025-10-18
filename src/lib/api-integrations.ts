@@ -3,6 +3,9 @@
  *
  * "The system's rigged, but we've got the APIs to rig it back."
  * - A platform that actually gives a damn about people
+ *
+ * ALL APIs here are either open source or free for personal/small business use.
+ * Because transparency and accessibility matter.
  */
 
 // ==============================================
@@ -12,6 +15,7 @@
 /**
  * Nominatim (OpenStreetMap) - Free geocoding
  * Address → Coordinates
+ * Rate limit: 1 req/sec (respect OSM servers)
  */
 export async function geocodeAddress(address: string) {
   try {
@@ -39,6 +43,72 @@ export async function geocodeAddress(address: string) {
   } catch (error) {
     console.error('Geocoding error:', error);
     return null;
+  }
+}
+
+/**
+ * LocationIQ - Faster geocoding with free tier
+ * Better for production use (60 req/sec on free tier)
+ */
+export async function geocodeAddressLocationIQ(address: string) {
+  const apiKey = process.env.LOCATIONIQ_API_KEY;
+  if (!apiKey) return geocodeAddress(address); // Fallback to Nominatim
+
+  try {
+    const response = await fetch(
+      `https://us1.locationiq.com/v1/search?` +
+      `key=${apiKey}` +
+      `&q=${encodeURIComponent(address)}` +
+      `&format=json&limit=1&addressdetails=1`
+    );
+
+    const data = await response.json();
+    if (data && data.length > 0) {
+      return {
+        latitude: parseFloat(data[0].lat),
+        longitude: parseFloat(data[0].lon),
+        displayName: data[0].display_name,
+        address: data[0].address,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('LocationIQ geocoding error:', error);
+    return geocodeAddress(address); // Fallback
+  }
+}
+
+/**
+ * OpenCage Geocoder - Detailed location data
+ * Free tier: 2,500 requests/day
+ */
+export async function geocodeAddressOpenCage(address: string) {
+  const apiKey = process.env.OPENCAGE_API_KEY;
+  if (!apiKey) return geocodeAddress(address);
+
+  try {
+    const response = await fetch(
+      `https://api.opencagedata.com/geocode/v1/json?` +
+      `key=${apiKey}` +
+      `&q=${encodeURIComponent(address)}` +
+      `&limit=1&pretty=0`
+    );
+
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      const result = data.results[0];
+      return {
+        latitude: result.geometry.lat,
+        longitude: result.geometry.lng,
+        displayName: result.formatted,
+        address: result.components,
+        confidence: result.confidence,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('OpenCage geocoding error:', error);
+    return geocodeAddress(address);
   }
 }
 
@@ -93,6 +163,28 @@ export async function getIPLocation() {
   }
 }
 
+/**
+ * GeoJS - Simple IP geolocation
+ * No API key, completely free
+ */
+export async function getIPLocationGeoJS() {
+  try {
+    const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
+    const data = await response.json();
+    return {
+      latitude: parseFloat(data.latitude),
+      longitude: parseFloat(data.longitude),
+      city: data.city,
+      country: data.country,
+      countryCode: data.country_code,
+      ip: data.ip,
+    };
+  } catch (error) {
+    console.error('GeoJS location error:', error);
+    return getIPLocation(); // Fallback
+  }
+}
+
 // ==============================================
 // TRANSLATION SERVICES
 // ==============================================
@@ -141,6 +233,37 @@ export async function getSupportedLanguages() {
   }
 }
 
+/**
+ * MyMemory Translation API
+ * Free tier: 10,000 words/day (higher with email registration)
+ * Fallback option for translation
+ */
+export async function translateTextMyMemory(
+  text: string,
+  targetLang: string,
+  sourceLang: string = 'en'
+) {
+  try {
+    const email = process.env.MYMEMORY_EMAIL || '';
+    let url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
+
+    if (email) {
+      url += `&de=${encodeURIComponent(email)}`;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.responseStatus === 200) {
+      return data.responseData.translatedText;
+    }
+    return text;
+  } catch (error) {
+    console.error('MyMemory translation error:', error);
+    return text;
+  }
+}
+
 // ==============================================
 // USER VERIFICATION & IDENTITY
 // ==============================================
@@ -164,6 +287,42 @@ export async function getGravatarUrl(email: string, size: number = 200): Promise
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+/**
+ * Hunter.io Email Verification
+ * Verify if an email exists and is deliverable
+ * Free tier: 25 searches/month
+ */
+export async function verifyEmailHunter(email: string) {
+  const apiKey = process.env.HUNTER_API_KEY;
+  if (!apiKey) {
+    console.warn('Hunter.io API key not configured - using basic validation');
+    return { valid: isValidEmail(email), verified: false };
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.hunter.io/v2/email-verifier?email=${encodeURIComponent(email)}&api_key=${apiKey}`
+    );
+
+    const data = await response.json();
+
+    if (data.data) {
+      return {
+        valid: data.data.result === 'deliverable',
+        verified: true,
+        score: data.data.score,
+        result: data.data.result,
+        disposable: data.data.disposable,
+        webmail: data.data.webmail,
+      };
+    }
+    return { valid: isValidEmail(email), verified: false };
+  } catch (error) {
+    console.error('Hunter.io verification error:', error);
+    return { valid: isValidEmail(email), verified: false };
+  }
 }
 
 // ==============================================
@@ -214,6 +373,138 @@ export async function getNearbyBuildings(
   } catch (error) {
     console.error('Building data error:', error);
     return [];
+  }
+}
+
+/**
+ * Zillow API (via RapidAPI)
+ * Search real estate listings
+ * Free tier available through RapidAPI
+ */
+export async function searchZillowListings(location: string, page: number = 1) {
+  const apiKey = process.env.RAPIDAPI_KEY;
+  if (!apiKey) {
+    console.warn('Zillow API key not configured');
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `https://zillow-com1.p.rapidapi.com/propertyExtendedSearch?location=${encodeURIComponent(location)}&page=${page}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com',
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data.props || [];
+  } catch (error) {
+    console.error('Zillow API error:', error);
+    return [];
+  }
+}
+
+/**
+ * UK Land Registry - Price Paid Data
+ * Free official property sales data for UK
+ * No API key needed - public CSV data
+ */
+export async function getUKPropertySales(postcode: string) {
+  try {
+    // This would connect to UK Land Registry open data
+    // For now, returning structure - full implementation needs CSV parsing
+    console.warn('UK Land Registry integration pending - needs CSV parser');
+    return {
+      postcode,
+      url: 'https://use-land-property-data.service.gov.uk/datasets/price-paid-data',
+      note: 'Download CSV and implement local parsing',
+    };
+  } catch (error) {
+    console.error('UK Land Registry error:', error);
+    return null;
+  }
+}
+
+// ==============================================
+// MEDIA & ASSETS
+// ==============================================
+
+/**
+ * Unsplash API - High-quality free images
+ * For profile backgrounds, property photos, etc.
+ * Free tier: 50 requests/hour
+ */
+export async function searchUnsplashImages(query: string, perPage: number = 10) {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) {
+    console.warn('Unsplash API key not configured');
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${perPage}`,
+      {
+        headers: {
+          Authorization: `Client-ID ${accessKey}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data.results.map((photo: {
+      id: string;
+      urls: { regular: string; small: string; thumb: string };
+      alt_description: string;
+      user: { name: string; username: string };
+      links: { html: string };
+    }) => ({
+      id: photo.id,
+      url: photo.urls.regular,
+      thumbnail: photo.urls.thumb,
+      alt: photo.alt_description,
+      photographer: photo.user.name,
+      photographerUrl: `https://unsplash.com/@${photo.user.username}`,
+      downloadUrl: photo.links.html,
+    }));
+  } catch (error) {
+    console.error('Unsplash API error:', error);
+    return [];
+  }
+}
+
+/**
+ * Get random Unsplash image for backgrounds
+ */
+export async function getRandomUnsplashImage(category: string = 'nature') {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) return null;
+
+  try {
+    const response = await fetch(
+      `https://api.unsplash.com/photos/random?query=${encodeURIComponent(category)}`,
+      {
+        headers: {
+          Authorization: `Client-ID ${accessKey}`,
+        },
+      }
+    );
+
+    const photo = await response.json();
+    return {
+      id: photo.id,
+      url: photo.urls.regular,
+      thumbnail: photo.urls.thumb,
+      alt: photo.alt_description,
+      photographer: photo.user.name,
+      photographerUrl: `https://unsplash.com/@${photo.user.username}`,
+    };
+  } catch (error) {
+    console.error('Unsplash random image error:', error);
+    return null;
   }
 }
 
