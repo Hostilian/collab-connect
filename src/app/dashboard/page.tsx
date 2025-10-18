@@ -3,10 +3,12 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { verified?: string }
+  searchParams: Promise<{ verified?: string }>
 }) {
   const session = await auth()
 
@@ -15,7 +17,8 @@ export default async function DashboardPage({
   }
 
   // Handle verification status
-  const verificationStatus = searchParams.verified;
+  const params = await searchParams
+  const verificationStatus = params.verified;
 
   // Fetch user profile with stats
   const profile = await prisma.profile.findUnique({

@@ -17,15 +17,23 @@ vi.mock('maplibre-gl', () => ({
   GeolocateControl: vi.fn(),
 }));
 
-// Mock react-map-gl
-vi.mock('react-map-gl', () => ({
+// Mock react-map-gl/maplibre
+vi.mock('react-map-gl/maplibre', () => ({
+  default: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="mock-map">{children}</div>
+  ),
   Map: ({ children }: { children?: React.ReactNode }) => (
     <div data-testid="mock-map">{children}</div>
   ),
   NavigationControl: () => <div data-testid="navigation-control" />,
   GeolocateControl: () => <div data-testid="geolocate-control" />,
+  FullscreenControl: () => <div data-testid="fullscreen-control" />,
+  ScaleControl: () => <div data-testid="scale-control" />,
   Marker: ({ children }: { children?: React.ReactNode }) => (
     <div data-testid="marker">{children}</div>
+  ),
+  Popup: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="popup">{children}</div>
   ),
 }));
 

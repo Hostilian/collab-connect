@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import React from "react";
 
+export const dynamic = 'force-dynamic'
+
 // Define types for component props
 interface InputProps {
   label: string;
