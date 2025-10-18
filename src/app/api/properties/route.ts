@@ -1,13 +1,11 @@
 /**
  * Property & Real Estate API
- * GET /api/properties - Search for properties
- * GET /api/properties/nearby - Find properties near coordinates
- * 
- * "Find houses to bid on together. Because collaboration beats corporations."
+ * GET /api/properties?action=search&location=...
+ * GET /api/properties?action=nearby&lat=...&lon=...
  */
 
-import { auth } from '@/lib/auth';
 import { getNearbyBuildings, searchZillowListings } from '@/lib/api-integrations';
+import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -31,10 +29,10 @@ export async function GET(request: NextRequest) {
         }
 
         const page = parseInt(searchParams.get('page') || '1');
-        
+
         // Try Zillow first, then fallback to OpenStreetMap
         const listings = await searchZillowListings(location, page);
-        
+
         return NextResponse.json({
           source: 'zillow',
           location,
