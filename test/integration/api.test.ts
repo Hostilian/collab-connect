@@ -49,6 +49,9 @@ describe('Auth API Routes', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         lastLoginAt: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        backupCodes: [],
       });
 
       const _mockRequest = {
@@ -82,6 +85,9 @@ describe('Auth API Routes', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         lastLoginAt: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        backupCodes: [],
       });
 
       // Test would verify the route returns 400 error
@@ -117,6 +123,9 @@ describe('Auth API Routes', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         lastLoginAt: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        backupCodes: [],
       });
 
       vi.mocked(prisma.user.update).mockResolvedValue({
@@ -131,6 +140,9 @@ describe('Auth API Routes', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         lastLoginAt: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        backupCodes: [],
       });
 
       expect(prisma.user.update).toBeDefined();
@@ -181,11 +193,17 @@ describe('Map API Routes', () => {
         lastLoginAt: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
+        twoFactorEnabled: boolean;
+        twoFactorSecret: string | null;
+        backupCodes: string[];
       };
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         ...mockUsers[0],
         emailVerificationToken: null,
         emailVerificationExpires: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        backupCodes: [],
       } as unknown as MockUser);
 
       expect(prisma.user).toBeDefined();

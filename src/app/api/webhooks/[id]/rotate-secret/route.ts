@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -18,8 +18,9 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const webhook = await prisma.webhook.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!webhook) {
@@ -30,7 +31,7 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const updatedWebhook = await rotateWebhookSecret(params.id);
+    const updatedWebhook = await rotateWebhookSecret(id);
 
     return NextResponse.json({
       webhook: {

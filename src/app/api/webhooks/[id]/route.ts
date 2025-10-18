@@ -19,7 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -27,8 +27,9 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const webhook = await prisma.webhook.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!webhook) {
@@ -39,10 +40,10 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get stats and recent deliveries
-    const [stats, deliveries] = await Promise.all([
-      getWebhookStats(params.id),
-      getWebhookDeliveries(params.id, 20),
+    // Get webhook stats and recent deliveries
+    const [stats, recentDeliveries] = await Promise.all([
+      getWebhookStats(id),
+      getWebhookDeliveries(id, 20),
     ]);
 
     return NextResponse.json({
@@ -52,7 +53,7 @@ export async function GET(
         secretPreview: webhook.secret.substring(0, 8) + '...',
       },
       stats,
-      recentDeliveries: deliveries,
+      recentDeliveries,
     });
   } catch (error) {
     console.error('Error fetching webhook:', error);
@@ -65,7 +66,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -73,8 +74,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const webhook = await prisma.webhook.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!webhook) {
@@ -116,7 +118,7 @@ export async function PATCH(
       }
     }
 
-    const updatedWebhook = await updateWebhook(params.id, {
+    const updatedWebhook = await updateWebhook(id, {
       url,
       events,
       isActive,
@@ -141,7 +143,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -149,8 +151,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const webhook = await prisma.webhook.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!webhook) {
@@ -161,7 +164,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await deleteWebhook(params.id);
+    await deleteWebhook(id);
 
     return NextResponse.json({
       message: 'Webhook deleted successfully',

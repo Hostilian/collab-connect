@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -19,8 +19,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const notification = await prisma.notification.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!notification) {
@@ -35,9 +36,9 @@ export async function PATCH(
     const { isRead, isArchived } = body;
 
     if (isArchived !== undefined) {
-      await archiveNotification(params.id);
+      await archiveNotification(id);
     } else if (isRead !== undefined) {
-      await markAsRead(params.id);
+      await markAsRead(id);
     }
 
     return NextResponse.json({
@@ -54,7 +55,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -62,8 +63,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const notification = await prisma.notification.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!notification) {
@@ -74,7 +76,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await deleteNotification(params.id);
+    await deleteNotification(id);
 
     return NextResponse.json({
       message: 'Notification deleted',

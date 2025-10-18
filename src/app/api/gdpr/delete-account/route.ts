@@ -3,7 +3,7 @@
  * POST /api/gdpr/delete-account - Delete user account and all associated data
  */
 
-import { logAudit } from '@/lib/audit';
+import { AuditAction, logAudit } from '@/lib/audit';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Log the deletion request before deleting
     await logAudit({
-      action: 'ACCOUNT_DELETION',
+      action: AuditAction.ACCOUNT_DELETION,
       userId,
       success: true,
       details: { reason: 'User requested account deletion' },

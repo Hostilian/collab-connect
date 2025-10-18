@@ -3,7 +3,7 @@
  * POST /api/gdpr/export - Export all user data
  */
 
-import { logAudit } from '@/lib/audit';
+import { AuditAction, logAudit } from '@/lib/audit';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
@@ -115,7 +115,7 @@ export async function POST(_request: NextRequest) {
 
     // Log the export request
     await logAudit({
-      action: 'DATA_EXPORT',
+      action: AuditAction.DATA_EXPORT,
       userId,
       success: true,
       details: { format: 'JSON' },

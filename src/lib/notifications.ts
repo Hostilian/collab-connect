@@ -84,7 +84,7 @@ export async function sendNotification(data: NotificationData) {
       title,
       message,
       link,
-      data: additionalData,
+      data: additionalData as never,
       priority,
       sentInApp: preferences.inAppEnabled,
       sentEmail: false,
@@ -154,7 +154,7 @@ export async function getNotificationPreferences(userId: string): Promise<Notifi
     });
   }
 
-  return preferences as NotificationPreferences;
+  return preferences as unknown as NotificationPreferences;
 }
 
 /**

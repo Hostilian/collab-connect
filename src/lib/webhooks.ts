@@ -196,7 +196,7 @@ async function deliverWebhook(
     data: {
       webhookId,
       event,
-      payload: data,
+      payload: data as never,
       attempts: 1,
     },
   });
@@ -317,7 +317,7 @@ export async function retryFailedDeliveries(): Promise<void> {
     await deliverWebhook(
       delivery.webhookId,
       delivery.event as WebhookEvent,
-      delivery.payload
+      delivery.payload as Record<string, unknown>
     );
   }
 }
