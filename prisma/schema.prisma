@@ -119,6 +119,8 @@ model Profile {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Index for efficient map bounding-box queries
+  @@index([latitude, longitude])
   @@map("profiles")
 }
 
@@ -367,6 +369,31 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// ========================================
+// AUDIT LOGGING
+// ========================================
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  action       String   // Action type (LOGIN, LOGOUT, PROFILE_UPDATE, etc.)
+  userId       String?  // User who performed the action
+  userEmail    String?  // Email for reference
+  ipAddress    String?  // Client IP address
+  userAgent    String?  // Browser/client info
+  resource     String?  // Resource type affected
+  resourceId   String?  // Resource ID affected
+  details      Json?    // Additional details
+  success      Boolean  @default(true)
+  errorMessage String?  // Error if failed
+  timestamp    DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@index([success])
+  @@map("audit_logs")
 }
 
 // ========================================

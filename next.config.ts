@@ -32,13 +32,40 @@ const nextConfig: NextConfig = {
     const securityHeaders = [
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'X-Frame-Options', value: 'DENY' },
-      { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'X-XSS-Protection', value: '1; mode=block' },
       { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-      // Minimal CSP skeleton; expand as needed
-      // Note: For Next 15, consider using Helmet in middleware for dynamic pages if needed
-      // { key: 'Content-Security-Policy', value: "default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; connect-src 'self' https:" },
-      { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(), camera=()' },
+      // Comprehensive Content Security Policy
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.sentry.io",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "img-src 'self' data: https: blob:",
+          "font-src 'self' https://fonts.gstatic.com",
+          "connect-src 'self' https://*.sentry.io https://vitals.vercel-insights.com https://*.vercel.app https://*.upstash.io",
+          "frame-src 'self' https://vercel.live",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "frame-ancestors 'none'",
+          "upgrade-insecure-requests"
+        ].join('; ')
+      },
+      // Permissions Policy (formerly Feature Policy)
+      {
+        key: 'Permissions-Policy',
+        value: 'geolocation=(self), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'
+      },
+      // Cross-Origin policies
+      { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+      { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+      // Additional security headers
+      { key: 'X-DNS-Prefetch-Control', value: 'on' },
+      { key: 'X-Download-Options', value: 'noopen' },
+      { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
     ]
 
     return [
