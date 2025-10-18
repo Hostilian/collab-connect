@@ -8,9 +8,7 @@ import Map, {
     NavigationControl,
     Popup,
     ScaleControl,
-    type MarkerEvent,
     type ViewState,
-    type ViewStateChangeEvent,
 } from 'react-map-gl/maplibre';
 import Supercluster from 'supercluster';
 import MapSearch, { type MapFilters } from './MapSearch';
@@ -29,9 +27,6 @@ interface MapUser {
 
 // GeoJSON point feature for supercluster
 type PointFeature = GeoJSON.Feature<GeoJSON.Point, MapUser>;
-
-// Cluster or point from supercluster (for type reference)
-type _ClusterFeature = Supercluster.ClusterFeature<MapUser>;
 
 // Placeholder data when database is not available
 const placeholderUsers: MapUser[] = [
@@ -61,6 +56,26 @@ const placeholderUsers: MapUser[] = [
         bio: 'Tech-for-good advocate building legal defense networks.',
         verificationLevel: 'verified',
         lastCollaboration: 'Illinois Insurance Coalition • 1 month ago',
+    },
+    {
+        id: '4',
+        longitude: -122.4194,
+        latitude: 37.7749,
+        name: 'Sarah M.',
+        bio: 'Coordinating group house purchases in SF Bay Area.',
+        verificationLevel: 'verified',
+        lastCollaboration: 'Bay Area Housing Collective • 3 days ago',
+        location: 'San Francisco, CA',
+    },
+    {
+        id: '5',
+        longitude: 2.3522,
+        latitude: 48.8566,
+        name: 'Pierre L.',
+        bio: 'Fighting insurance companies across Europe.',
+        verificationLevel: 'pending',
+        lastCollaboration: 'EU Rights Coalition • 1 week ago',
+        location: 'Paris, France',
     },
 ];
 
@@ -231,7 +246,7 @@ export default function InteractiveMap(): ReactElement {
 
             <Map
                 {...viewState}
-                onMove={(evt: ViewStateChangeEvent) => setViewState(evt.viewState)}
+                onMove={(evt) => setViewState(evt.viewState)}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={mapStyle}
                 attributionControl={false}
@@ -256,7 +271,7 @@ export default function InteractiveMap(): ReactElement {
                                 key={`cluster-${cluster.id}`}
                                 longitude={longitude}
                                 latitude={latitude}
-                                onClick={(event: MarkerEvent<MouseEvent>) => {
+                                onClick={(event) => {
                                     event.originalEvent.stopPropagation();
 
                                     // Get expansion zoom and fly to cluster
@@ -289,7 +304,7 @@ export default function InteractiveMap(): ReactElement {
                             key={`user-${user.id}`}
                             longitude={longitude}
                             latitude={latitude}
-                            onClick={(event: MarkerEvent<MouseEvent>) => {
+                            onClick={(event) => {
                                 event.originalEvent.stopPropagation();
                                 setPopupInfo(user);
                             }}
