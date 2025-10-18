@@ -21,12 +21,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Sentry configuration
-  sentry: {
-    hideSourceMaps: true,
-    widenClientFileUpload: true,
-  },
-
   // Security headers
   async headers() {
     const securityHeaders = [
