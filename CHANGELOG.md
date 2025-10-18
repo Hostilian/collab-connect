@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/Hostilian/collab-connect/compare/v1.0.0...v1.1.0) (2025-10-18)
+
+
+### Features
+
+* Add Vercel setup helper scripts for easy deployment configuration ([d80add9](https://github.com/Hostilian/collab-connect/commit/d80add90bbf72fb89669bba5da4cebe58a36f39e))
+
 # 1.0.0 (2025-10-18)
 
 
