@@ -4,7 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialize Resend client to avoid build-time errors
+let resend: Resend | null = null;
+function getResendClient() {
+    if (!resend) {
+        const apiKey = process.env.RESEND_API_KEY || 'dummy_key_for_build';
+        resend = new Resend(apiKey);
+    }
+    return resend;
+}
 
 export async function sendVerificationEmail(userId: string, email: string, name: string) {
     try {
@@ -26,7 +34,7 @@ export async function sendVerificationEmail(userId: string, email: string, name:
         const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify?token=${token}`;
 
         // Send email using Resend
-        const { data, error } = await resend.emails.send({
+        const { data, error } = await getResendClient().emails.send({
             from: 'CollabConnect <onboarding@collabconnect.com>',
             to: email,
             subject: 'Verify your CollabConnect account',

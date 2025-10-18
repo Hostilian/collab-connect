@@ -4,7 +4,18 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialize Resend client to avoid build-time errors
+let resend: Resend | null = null;
+function getResendClient() {
+    if (!resend) {
+        const apiKey = process.env.RESEND_API_KEY || 'dummy_key_for_build';
+        resend = new Resend(apiKey);
+    }
+    return resend;
+}
+
+// This route should not be statically rendered
+export const dynamic = 'force-dynamic';
 
 // GET /api/auth/verify?token=xxx
 export async function GET(request: NextRequest) {
@@ -53,7 +64,7 @@ export async function GET(request: NextRequest) {
 
         // Send welcome email
         try {
-            await resend.emails.send({
+            await getResendClient().emails.send({
                 from: 'CollabConnect <onboarding@collabconnect.com>',
                 to: user.email,
                 subject: 'Welcome to CollabConnect!',

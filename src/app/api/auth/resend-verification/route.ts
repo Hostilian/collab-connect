@@ -2,6 +2,9 @@ import { resendVerificationEmail } from '@/lib/email';
 import { createRateLimitResponse, getClientId, rateLimiters } from '@/lib/ratelimit';
 import { NextRequest, NextResponse } from 'next/server';
 
+// This route should not be statically rendered
+export const dynamic = 'force-dynamic';
+
 // POST /api/auth/resend-verification
 export async function POST(request: NextRequest) {
     try {

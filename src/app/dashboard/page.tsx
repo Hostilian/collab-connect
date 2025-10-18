@@ -6,7 +6,7 @@ import { redirect } from "next/navigation"
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { verified?: string }
+  searchParams: Promise<{ verified?: string }>
 }) {
   const session = await auth()
 
@@ -14,8 +14,9 @@ export default async function DashboardPage({
     redirect("/auth/signin")
   }
 
-  // Handle verification status
-  const verificationStatus = searchParams.verified;
+  // Handle verification status (await searchParams in Next.js 15+)
+  const params = await searchParams
+  const verificationStatus = params.verified;
 
   // Fetch user profile with stats
   const profile = await prisma.profile.findUnique({
