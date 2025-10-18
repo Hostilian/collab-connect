@@ -40,11 +40,11 @@ const nextConfig: NextConfig = {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.sentry.io",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.sentry.io https:",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https: blob:",
           "font-src 'self' https://fonts.gstatic.com",
-          "connect-src 'self' https://*.sentry.io https://vitals.vercel-insights.com https://*.vercel.app https://*.upstash.io",
+          "connect-src 'self' https:",
           "frame-src 'self' https://vercel.live",
           "object-src 'none'",
           "base-uri 'self'",
@@ -58,10 +58,6 @@ const nextConfig: NextConfig = {
         key: 'Permissions-Policy',
         value: 'geolocation=(self), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'
       },
-      // Cross-Origin policies
-      { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
-      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-      { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
       // Additional security headers
       { key: 'X-DNS-Prefetch-Control', value: 'on' },
       { key: 'X-Download-Options', value: 'noopen' },

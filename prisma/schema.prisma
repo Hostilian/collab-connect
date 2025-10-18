@@ -362,13 +362,59 @@ model Notification {
   title     String
   message   String
   link      String?
+  data      Json?    // Additional data payload
 
-  isRead    Boolean  @default(false)
+  // Delivery channels
+  sentInApp    Boolean  @default(true)
+  sentEmail    Boolean  @default(false)
+  sentPush     Boolean  @default(false)
+
+  // Status
+  isRead       Boolean  @default(false)
+  readAt       DateTime?
+  isArchived   Boolean  @default(false)
+  archivedAt   DateTime?
+
+  // Priority
+  priority     String   @default("normal") // "low", "normal", "high", "urgent"
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
   @@map("notifications")
+}
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+
+  // Channel preferences
+  emailEnabled      Boolean  @default(true)
+  pushEnabled       Boolean  @default(true)
+  inAppEnabled      Boolean  @default(true)
+
+  // Event preferences
+  newMatch          Boolean  @default(true)
+  groupInvite       Boolean  @default(true)
+  newMessage        Boolean  @default(true)
+  collaborationUpdate Boolean @default(true)
+  profileView       Boolean  @default(true)
+  weeklyDigest      Boolean  @default(true)
+
+  // Quiet hours
+  quietHoursEnabled Boolean  @default(false)
+  quietHoursStart   Int?     // Hour 0-23
+  quietHoursEnd     Int?     // Hour 0-23
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_preferences")
 }
 
 // ========================================
@@ -394,6 +440,53 @@ model AuditLog {
   @@index([timestamp])
   @@index([success])
   @@map("audit_logs")
+}
+
+// ========================================
+// WEBHOOKS SYSTEM
+// ========================================
+
+model Webhook {
+  id          String   @id @default(cuid())
+  userId      String   // Owner of the webhook
+  url         String   // Destination URL
+  secret      String   // For signature verification
+  events      String[] // Array of event types to subscribe to
+  isActive    Boolean  @default(true)
+  description String?
+
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastTriggeredAt DateTime?
+
+  // Relations
+  deliveries  WebhookDelivery[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id          String   @id @default(cuid())
+  webhookId   String
+  event       String   // Event type
+  payload     Json     // Event data
+  responseCode Int?    // HTTP response code
+  responseBody String?  @db.Text
+  success     Boolean  @default(false)
+  attempts    Int      @default(1)
+  nextRetryAt DateTime?
+  createdAt   DateTime @default(now())
+
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([success])
+  @@index([nextRetryAt])
+  @@index([createdAt])
+  @@map("webhook_deliveries")
 }
 
 // ========================================
