@@ -71,7 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile: _profile }) {
       // Auto-create profile on first sign in
       if (user.id) {
         const existingProfile = await prisma.profile.findUnique({

@@ -30,9 +30,8 @@ interface MapUser {
 // GeoJSON point feature for supercluster
 type PointFeature = GeoJSON.Feature<GeoJSON.Point, MapUser>;
 
-// Cluster or point from supercluster
-type ClusterFeature = Supercluster.ClusterFeature<MapUser>;
-type ClusterOrPoint = PointFeature | ClusterFeature;
+// Cluster or point from supercluster (for type reference)
+type _ClusterFeature = Supercluster.ClusterFeature<MapUser>;
 
 // Placeholder data when database is not available
 const placeholderUsers: MapUser[] = [
@@ -137,7 +136,7 @@ export default function InteractiveMap(): ReactElement {
         setUsers(filtered);
     }, [filters, allUsers]);
 
-    const handleSearch = (query: string) => {
+    const handleSearch = (_query: string) => {
         // Search is handled by the filter effect
     };
 
@@ -146,7 +145,7 @@ export default function InteractiveMap(): ReactElement {
     };
 
     // Create supercluster index
-    const { supercluster, points } = useMemo(() => {
+    const { supercluster } = useMemo(() => {
         const cluster = new Supercluster<MapUser>({
             radius: 75,
             maxZoom: 20,
@@ -244,7 +243,11 @@ export default function InteractiveMap(): ReactElement {
 
                 {clusters.map((cluster) => {
                     const [longitude, latitude] = cluster.geometry.coordinates;
-                    const { cluster: isCluster, point_count: pointCount } = cluster.properties as any;
+                    const { cluster: isCluster, point_count: pointCount } = cluster.properties as {
+                        cluster?: boolean;
+                        point_count?: number;
+                        cluster_id?: number;
+                    };
 
                     if (isCluster) {
                         // Render cluster marker
