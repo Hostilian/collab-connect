@@ -1,0 +1,269 @@
+name: Database Backups
+
+on:
+  schedule:
+    # Daily backups at 2 AM UTC
+    - cron: '0 2 * * *'
+    # Weekly full backup on Sunday at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Backup type'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+          - manual
+      retention_days:
+        description: 'Retention days (0 for default)'
+        required: false
+        default: '0'
+
+env:
+  # Backup retention settings
+  DAILY_RETENTION_DAYS: 7
+  WEEKLY_RETENTION_DAYS: 30
+  MANUAL_RETENTION_DAYS: 90
+
+jobs:
+  backup-database:
+    name: Backup PostgreSQL Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set backup type and retention
+        id: config
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TYPE="${{ github.event.inputs.backup_type }}"
+            RETENTION="${{ github.event.inputs.retention_days }}"
+          elif [ "${{ github.event.schedule }}" = "0 3 * * 0" ]; then
+            TYPE="weekly"
+            RETENTION="${{ env.WEEKLY_RETENTION_DAYS }}"
+          else
+            TYPE="daily"
+            RETENTION="${{ env.DAILY_RETENTION_DAYS }}"
+          fi
+
+          if [ "$RETENTION" = "0" ]; then
+            if [ "$TYPE" = "weekly" ]; then
+              RETENTION="${{ env.WEEKLY_RETENTION_DAYS }}"
+            elif [ "$TYPE" = "daily" ]; then
+              RETENTION="${{ env.DAILY_RETENTION_DAYS }}"
+            else
+              RETENTION="${{ env.MANUAL_RETENTION_DAYS }}"
+            fi
+          fi
+
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+          echo "retention=$RETENTION" >> $GITHUB_OUTPUT
+
+      - name: Generate backup filename
+        id: filename
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          TYPE="${{ steps.config.outputs.type }}"
+          FILENAME="collabconnect_${TYPE}_${TIMESTAMP}.sql.gz"
+          echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create database backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Extract connection details from DATABASE_URL
+          # Format: postgresql://user:password@host:port/database
+
+          FILENAME="${{ steps.filename.outputs.filename }}"
+
+          # Parse DATABASE_URL
+          DB_HOST=$(echo $DATABASE_URL | sed -E 's|.*@([^:]+):.*|\1|')
+          DB_PORT=$(echo $DATABASE_URL | sed -E 's|.*:([0-9]+)/.*|\1|')
+          DB_NAME=$(echo $DATABASE_URL | sed -E 's|.*/([^?]+).*|\1|')
+          DB_USER=$(echo $DATABASE_URL | sed -E 's|.*://([^:]+):.*|\1|')
+          DB_PASS=$(echo $DATABASE_URL | sed -E 's|.*://[^:]+:([^@]+)@.*|\1|')
+
+          # Create backup with pg_dump
+          PGPASSWORD="$DB_PASS" pg_dump \
+            -h "$DB_HOST" \
+            -p "$DB_PORT" \
+            -U "$DB_USER" \
+            -d "$DB_NAME" \
+            --format=custom \
+            --verbose \
+            --no-owner \
+            --no-acl \
+            | gzip > "$FILENAME"
+
+          # Get backup size
+          SIZE=$(du -h "$FILENAME" | cut -f1)
+          echo "Backup created: $FILENAME (Size: $SIZE)"
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+
+      - name: Verify backup integrity
+        run: |
+          FILENAME="${{ steps.filename.outputs.filename }}"
+
+          # Check if file exists and is not empty
+          if [ ! -s "$FILENAME" ]; then
+            echo "Error: Backup file is empty or does not exist"
+            exit 1
+          fi
+
+          # Verify gzip integrity
+          if ! gzip -t "$FILENAME"; then
+            echo "Error: Backup file is corrupted"
+            exit 1
+          fi
+
+          echo "Backup integrity verified successfully"
+
+      - name: Upload backup to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.filename.outputs.filename }}
+          path: ${{ steps.filename.outputs.filename }}
+          retention-days: ${{ steps.config.outputs.retention }}
+          compression-level: 0  # Already compressed
+
+      - name: Upload backup to cloud storage (optional)
+        if: env.AWS_S3_BUCKET != ''
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # Install AWS CLI
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+          FILENAME="${{ steps.filename.outputs.filename }}"
+          TYPE="${{ steps.config.outputs.type }}"
+
+          # Upload to S3
+          aws s3 cp "$FILENAME" \
+            "s3://$AWS_S3_BUCKET/database-backups/$TYPE/$FILENAME" \
+            --region "$AWS_REGION" \
+            --storage-class STANDARD_IA
+
+          echo "Backup uploaded to S3: s3://$AWS_S3_BUCKET/database-backups/$TYPE/$FILENAME"
+
+      - name: Generate backup metadata
+        run: |
+          cat > backup_metadata.json <<EOF
+          {
+            "filename": "${{ steps.filename.outputs.filename }}",
+            "type": "${{ steps.config.outputs.type }}",
+            "timestamp": "${{ steps.filename.outputs.timestamp }}",
+            "size": "${{ steps.backup.outputs.size }}",
+            "retention_days": "${{ steps.config.outputs.retention }}",
+            "git_sha": "${{ github.sha }}",
+            "workflow_run": "${{ github.run_id }}",
+            "created_by": "${{ github.actor }}"
+          }
+          EOF
+
+          cat backup_metadata.json
+
+      - name: Upload metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.filename.outputs.filename }}_metadata
+          path: backup_metadata.json
+          retention-days: ${{ steps.config.outputs.retention }}
+
+      - name: Send backup notification
+        if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          STATUS="${{ job.status }}"
+          FILENAME="${{ steps.filename.outputs.filename }}"
+          TYPE="${{ steps.config.outputs.type }}"
+
+          if [ "$STATUS" = "success" ]; then
+            COLOR="good"
+            MESSAGE="✅ Database backup completed successfully"
+          else
+            COLOR="danger"
+            MESSAGE="❌ Database backup failed"
+          fi
+
+          if [ -n "$SLACK_WEBHOOK" ]; then
+            curl -X POST "$SLACK_WEBHOOK" \
+              -H 'Content-Type: application/json' \
+              -d "{
+                \"attachments\": [{
+                  \"color\": \"$COLOR\",
+                  \"title\": \"$MESSAGE\",
+                  \"fields\": [
+                    {\"title\": \"Type\", \"value\": \"$TYPE\", \"short\": true},
+                    {\"title\": \"Filename\", \"value\": \"$FILENAME\", \"short\": true},
+                    {\"title\": \"Workflow\", \"value\": \"${{ github.run_id }}\", \"short\": true},
+                    {\"title\": \"Actor\", \"value\": \"${{ github.actor }}\", \"short\": true}
+                  ]
+                }]
+              }"
+          fi
+
+  cleanup-old-backups:
+    name: Cleanup Old Backups
+    runs-on: ubuntu-latest
+    needs: backup-database
+    if: always()
+
+    steps:
+      - name: Cleanup old S3 backups (optional)
+        if: env.AWS_S3_BUCKET != ''
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # Install AWS CLI
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+          # Delete daily backups older than 7 days
+          aws s3 ls "s3://$AWS_S3_BUCKET/database-backups/daily/" \
+            | awk '{print $4}' \
+            | while read file; do
+              FILE_DATE=$(echo "$file" | grep -oP '\d{8}' | head -1)
+              CURRENT_DATE=$(date +%Y%m%d)
+              DAYS_OLD=$(( ( $(date -d "$CURRENT_DATE" +%s) - $(date -d "$FILE_DATE" +%s) ) / 86400 ))
+
+              if [ $DAYS_OLD -gt ${{ env.DAILY_RETENTION_DAYS }} ]; then
+                echo "Deleting old daily backup: $file"
+                aws s3 rm "s3://$AWS_S3_BUCKET/database-backups/daily/$file"
+              fi
+            done
+
+          # Delete weekly backups older than 30 days
+          aws s3 ls "s3://$AWS_S3_BUCKET/database-backups/weekly/" \
+            | awk '{print $4}' \
+            | while read file; do
+              FILE_DATE=$(echo "$file" | grep -oP '\d{8}' | head -1)
+              CURRENT_DATE=$(date +%Y%m%d)
+              DAYS_OLD=$(( ( $(date -d "$CURRENT_DATE" +%s) - $(date -d "$FILE_DATE" +%s) ) / 86400 ))
+
+              if [ $DAYS_OLD -gt ${{ env.WEEKLY_RETENTION_DAYS }} ]; then
+                echo "Deleting old weekly backup: $file"
+                aws s3 rm "s3://$AWS_S3_BUCKET/database-backups/weekly/$file"
+              fi
+            done

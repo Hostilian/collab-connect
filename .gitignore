@@ -70,11 +70,6 @@ prisma/migrations/
 # turbopack
 .turbo
 
-# CI
-.github/
-.circleci/
-.gitlab/
-
 # test results
 coverage/
 coverage-final.json
