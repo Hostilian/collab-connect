@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   title: "CollabConnect - Connect. Collaborate. Win.",
@@ -21,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased font-sans`}>
+      <body className="antialiased font-sans">
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
