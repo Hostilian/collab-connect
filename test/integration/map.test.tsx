@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import InteractiveMap from '@/components/map/InteractiveMap';
+import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock maplibre-gl
 vi.mock('maplibre-gl', () => ({
@@ -65,7 +65,7 @@ describe('InteractiveMap Integration', () => {
 
   it('should initialize with default viewport settings', async () => {
     const { container } = render(<InteractiveMap />);
-    
+
     await vi.waitFor(() => {
       expect(container.querySelector('[data-testid="mock-map"]')).toBeInTheDocument();
     });
@@ -84,7 +84,7 @@ describe('InteractiveMap Integration', () => {
       }),
     };
 
-    // @ts-ignore
+    // @ts-expect-error - Mocking navigator.geolocation
     global.navigator.geolocation = mockGeolocation;
 
     render(<InteractiveMap />);
