@@ -23,12 +23,20 @@ export default async function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {session ? (
-                <Link
-                  href="/dashboard"
-                  className="px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-full hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl"
-                >
-                  Go to Dashboard
-                </Link>
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-full hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    Go to Dashboard
+                  </Link>
+                  <Link
+                    href="/map"
+                    className="px-8 py-4 bg-white text-indigo-600 text-lg font-semibold rounded-full hover:bg-gray-50 transition-all border-2 border-indigo-600"
+                  >
+                    🗺️ Explore Map
+                  </Link>
+                </>
               ) : (
                 <>
                   <Link
@@ -42,6 +50,12 @@ export default async function Home() {
                     className="px-8 py-4 bg-white text-indigo-600 text-lg font-semibold rounded-full hover:bg-gray-50 transition-all border-2 border-indigo-600"
                   >
                     Sign In
+                  </Link>
+                  <Link
+                    href="/map"
+                    className="px-6 py-3 bg-gray-100 text-gray-700 text-base font-semibold rounded-full hover:bg-gray-200 transition-all"
+                  >
+                    🗺️ Preview Map
                   </Link>
                 </>
               )}

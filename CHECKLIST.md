@@ -143,7 +143,7 @@ Choose ONE option:
 - [ ] Go to https://mapbox.com (or https://maptiler.com)
 - [ ] Create free account
 - [ ] Get API token
-- [ ] Add to .env as `NEXT_PUBLIC_MAPBOX_TOKEN` (or `NEXT_PUBLIC_MAPTILER_API_KEY`)
+- [ ] Add to .env as `NEXT_PUBLIC_MAPBOX_TOKEN` (or `NEXT_PUBLIC_MAPTILER_KEY`)
 - [ ] Restart dev server
 - [ ] Map features will work when implemented
 

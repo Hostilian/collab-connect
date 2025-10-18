@@ -171,7 +171,7 @@ NEXT_PUBLIC_MAPBOX_TOKEN="your-token-here"
 2. Get free API key
 3. Add to .env:
 ```env
-NEXT_PUBLIC_MAPTILER_API_KEY="your-key-here"
+NEXT_PUBLIC_MAPTILER_KEY="your-key-here"
 ```
 
 ## Need Help?
