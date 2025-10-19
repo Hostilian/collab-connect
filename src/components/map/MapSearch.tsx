@@ -32,6 +32,12 @@ export default function MapSearch({ onSearch, onFilterChange, currentFilters }: 
 
     const hasActiveFilters = currentFilters.searchQuery || currentFilters.verificationLevel !== 'all';
 
+    const verificationBadges: Record<string, string> = {
+        verified: 'bg-emerald-500',
+        pending: 'bg-amber-400',
+        unverified: 'bg-slate-400',
+    };
+
     return (
         <div className="pointer-events-auto absolute right-6 top-6 w-80">
             <div className="rounded-2xl bg-white shadow-xl">
@@ -101,10 +107,10 @@ export default function MapSearch({ onSearch, onFilterChange, currentFilters }: 
                                 </label>
                                 <div className="space-y-2">
                                     {[
-                                        { value: 'all', label: 'All Users', color: 'slate' },
-                                        { value: 'verified', label: 'Verified Only', color: 'emerald' },
-                                        { value: 'pending', label: 'Pending', color: 'amber' },
-                                        { value: 'unverified', label: 'Unverified', color: 'slate' },
+                                        { value: 'all', label: 'All Users' },
+                                        { value: 'verified', label: 'Verified Only' },
+                                        { value: 'pending', label: 'Pending' },
+                                        { value: 'unverified', label: 'Unverified' },
                                     ].map((option) => (
                                         <label
                                             key={option.value}
@@ -125,8 +131,8 @@ export default function MapSearch({ onSearch, onFilterChange, currentFilters }: 
                                             <span className="flex items-center gap-2 text-sm">
                                                 {option.value !== 'all' && (
                                                     <span
-                                                        className={`h-3 w-3 rounded-full bg-${option.color}-${
-                                                            option.color === 'emerald' ? '500' : '400'
+                                                        className={`h-3 w-3 rounded-full ${
+                                                            verificationBadges[option.value] ?? 'bg-slate-400'
                                                         }`}
                                                     ></span>
                                                 )}

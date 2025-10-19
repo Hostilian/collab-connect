@@ -13,14 +13,20 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
+  const [theme, setThemeState] = useState<Theme>('light');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     // Load theme from localStorage
     const stored = localStorage.getItem('theme') as Theme;
-    if (stored) {
-      setThemeState(stored);
+    if (stored === 'light') {
+      setThemeState('light');
+    } else if (stored === 'dark') {
+      // Force legacy dark preference back to light so the UI stays consistent
+      localStorage.setItem('theme', 'light');
+      setThemeState('light');
+    } else if (stored === 'system') {
+      setThemeState('light');
     }
   }, []);
 
@@ -28,22 +34,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
 
-    let resolved: 'light' | 'dark';
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      resolved = systemTheme;
-    } else {
-      resolved = theme;
-    }
+    const resolved: 'light' | 'dark' = theme === 'dark' ? 'dark' : 'light';
 
     root.classList.add(resolved);
     setResolvedTheme(resolved);
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
+    if (newTheme === 'dark') {
+      // Lock the experience to light for now to avoid dark-theme regressions
+      localStorage.setItem('theme', 'light');
+      setThemeState('light');
+      return;
+    }
+
     localStorage.setItem('theme', newTheme);
     setThemeState(newTheme);
   };

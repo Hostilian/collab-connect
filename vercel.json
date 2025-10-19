@@ -8,7 +8,23 @@
   "env": {
     "DATABASE_URL": "@database_url",
     "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url"
+    "NEXTAUTH_URL": "@nextauth_url",
+    "TWILIO_ACCOUNT_SID": "@twilio_account_sid",
+    "TWILIO_AUTH_TOKEN": "@twilio_auth_token",
+    "TWILIO_PHONE_NUMBER": "@twilio_phone_number",
+    "AWS_ACCESS_KEY_ID": "@aws_access_key_id",
+    "AWS_SECRET_ACCESS_KEY": "@aws_secret_access_key",
+    "AWS_S3_BUCKET": "@aws_s3_bucket",
+    "AWS_REGION": "@aws_region",
+    "PUSHER_APP_ID": "@pusher_app_id",
+    "PUSHER_KEY": "@pusher_key",
+    "PUSHER_SECRET": "@pusher_secret",
+    "PUSHER_CLUSTER": "@pusher_cluster",
+    "VAPID_PUBLIC_KEY": "@vapid_public_key",
+    "VAPID_PRIVATE_KEY": "@vapid_private_key",
+    "UPSTASH_REDIS_REST_URL": "@upstash_redis_rest_url",
+    "UPSTASH_REDIS_REST_TOKEN": "@upstash_redis_rest_token",
+    "SENTRY_DSN": "@sentry_dsn"
   },
   "headers": [
     {
