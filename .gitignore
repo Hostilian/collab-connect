@@ -41,6 +41,9 @@ yarn-error.log*
 .env.development
 .env.test
 .env.production
+# ignore all other env variants and backups, but keep example tracked
+.env.*
+!.env.example
 
 # vercel
 .vercel
