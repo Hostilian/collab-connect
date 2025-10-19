@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/Hostilian/collab-connect/compare/v1.3.1...v1.3.2) (2025-10-19)
+
+
+### Bug Fixes
+
+* update react to 19.2.0 alongside react-dom to resolve peer dependency conflict ([fddb688](https://github.com/Hostilian/collab-connect/commit/fddb688099ddc3d9449145578944861e84b8383e))
+
 ## [1.3.1](https://github.com/Hostilian/collab-connect/compare/v1.3.0...v1.3.1) (2025-10-19)
 
 
