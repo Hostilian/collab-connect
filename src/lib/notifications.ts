@@ -317,7 +317,7 @@ async function sendPushNotification(
     }
 
     const webpush = (await import('web-push')).default;
-    
+
     // Configure VAPID keys (should be in environment variables)
     webpush.setVapidDetails(
       `mailto:${process.env.VAPID_EMAIL || 'admin@collabconnect.com'}`,
@@ -347,9 +347,10 @@ async function sendPushNotification(
           },
           notificationPayload
         );
-      } catch (error: any) {
+      } catch (error) {
         // If subscription is invalid, mark it as inactive
-        if (error.statusCode === 404 || error.statusCode === 410) {
+        const err = error as { statusCode?: number };
+        if (err.statusCode === 404 || err.statusCode === 410) {
           await prisma.pushSubscription.update({
             where: { id: sub.id },
             data: { isActive: false },

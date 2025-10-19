@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
@@ -38,11 +38,12 @@ export function usePushNotifications() {
       }
 
       // Subscribe to push notifications
+      const appServerKey = urlBase64ToUint8Array(
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+      );
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-        ),
+        applicationServerKey: appServerKey as unknown as BufferSource,
       });
 
       // Send subscription to server
@@ -68,9 +69,10 @@ export function usePushNotifications() {
       setIsSubscribed(true);
       setError(null);
       return true;
-    } catch (err: any) {
-      console.error('Error subscribing to push:', err);
-      setError(err.message || 'Failed to subscribe');
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error subscribing to push:', error);
+      setError(error.message || 'Failed to subscribe');
       return false;
     }
   };
@@ -94,9 +96,10 @@ export function usePushNotifications() {
       setIsSubscribed(false);
       setError(null);
       return true;
-    } catch (err: any) {
-      console.error('Error unsubscribing from push:', err);
-      setError(err.message || 'Failed to unsubscribe');
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error unsubscribing from push:', error);
+      setError(error.message || 'Failed to unsubscribe');
       return false;
     }
   };

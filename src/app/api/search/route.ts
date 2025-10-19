@@ -1,6 +1,6 @@
+import { prisma } from '@/lib/prisma';
 import { createRateLimitResponse, getRateLimitHeaders, rateLimit, rateLimiters } from '@/lib/ratelimit';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,25 +31,49 @@ export async function GET(request: Request) {
     }
 
     const offset = (page - 1) * limit;
-    const searchTerm = `%${query.trim().toLowerCase()}%`;
 
-    let users: any[] = [];
-    let groups: any[] = [];
+    interface UserResult {
+      id: string;
+      name: string | null;
+      email: string;
+      image: string | null;
+      emailVerified: Date | null;
+      createdAt: Date;
+      profile: {
+        bio: string | null;
+        location: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        isVerified: boolean;
+      } | null;
+    }
+
+    interface GroupResult {
+      id: string;
+      name: string;
+      description: string | null;
+      type: string;
+      createdAt: Date;
+      _count: {
+        members: number;
+      };
+    }
+
+    let users: UserResult[] = [];
+    let groups: GroupResult[] = [];
     let totalUsers = 0;
     let totalGroups = 0;
 
     // Search users
     if (type === 'all' || type === 'users') {
-      const whereClause: any = {
+      const whereClause = {
         OR: [
-          { name: { contains: query.trim(), mode: 'insensitive' } },
-          { email: { contains: query.trim(), mode: 'insensitive' } },
+          { name: { contains: query.trim(), mode: 'insensitive' as const } },
+          { email: { contains: query.trim(), mode: 'insensitive' as const } },
         ],
+        ...(verified ? { emailVerified: { not: null } } : {}),
       };
 
-      if (verified) {
-        whereClause.emailVerified = { not: null };
-      }
 
       [users, totalUsers] = await Promise.all([
         prisma.user.findMany({
@@ -67,8 +91,7 @@ export async function GET(request: Request) {
                 location: true,
                 latitude: true,
                 longitude: true,
-                verificationLevel: true,
-                phoneVerified: true,
+                isVerified: true,
               },
             },
           },
@@ -87,8 +110,8 @@ export async function GET(request: Request) {
     if (type === 'all' || type === 'groups') {
       const groupWhereClause = {
         OR: [
-          { name: { contains: query.trim(), mode: 'insensitive' } },
-          { description: { contains: query.trim(), mode: 'insensitive' } },
+          { name: { contains: query.trim(), mode: 'insensitive' as const } },
+          { description: { contains: query.trim(), mode: 'insensitive' as const } },
         ],
       };
 
@@ -99,7 +122,7 @@ export async function GET(request: Request) {
             id: true,
             name: true,
             description: true,
-            purpose: true,
+            type: true,
             createdAt: true,
             _count: {
               select: {
@@ -130,8 +153,7 @@ export async function GET(request: Request) {
           email: user.email,
           image: user.image,
           verified: !!user.emailVerified,
-          phoneVerified: user.profile?.phoneVerified || false,
-          verificationLevel: user.profile?.verificationLevel || 'unverified',
+          isVerified: user.profile?.isVerified || false,
           bio: user.profile?.bio,
           location: user.profile?.location,
           coordinates: user.profile?.latitude && user.profile?.longitude
@@ -143,7 +165,7 @@ export async function GET(request: Request) {
           id: group.id,
           name: group.name,
           description: group.description,
-          purpose: group.purpose,
+          type: group.type,
           memberCount: group._count.members,
           createdAt: group.createdAt,
         })),

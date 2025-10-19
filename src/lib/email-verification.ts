@@ -1,5 +1,5 @@
-import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
 
 /**
  * Generate a unique email verification token
@@ -24,7 +24,15 @@ export async function generateVerificationToken(email: string): Promise<string> 
  */
 export async function validateVerificationToken(
   token: string
-): Promise<{ valid: boolean; user?: any; error?: string }> {
+): Promise<{
+  valid: boolean;
+  user?: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+  error?: string;
+}> {
   try {
     const user = await prisma.user.findFirst({
       where: {
@@ -32,6 +40,11 @@ export async function validateVerificationToken(
         emailVerificationExpires: {
           gt: new Date(),
         },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
       },
     });
 

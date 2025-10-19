@@ -352,6 +352,9 @@ model PropertyListing {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Relations
+  favorites   PropertyFavorite[]
+
   @@index([latitude, longitude])
   @@map("property_listings")
 }
@@ -525,5 +528,267 @@ model PushSubscription {
   @@index([userId])
   @@index([isActive])
   @@map("push_subscriptions")
+}
+
+// ========================================
+// PHONE VERIFICATION
+// ========================================
+
+model PhoneVerification {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  phoneNumber String
+  otp         String   // Hashed OTP
+  verified    Boolean  @default(false)
+  attempts    Int      @default(0)
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([phoneNumber])
+  @@index([expiresAt])
+  @@map("phone_verifications")
+}
+
+// ========================================
+// ID VERIFICATION SYSTEM
+// ========================================
+
+model IdVerification {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  documentType    String   // "passport", "drivers_license", "national_id"
+  documentNumber  String?
+  frontImageUrl   String
+  backImageUrl    String?
+  selfieUrl       String?
+
+  status          String   @default("pending") // "pending", "approved", "rejected", "needs_review"
+  reviewedBy      String?  // Admin user ID
+  reviewedAt      DateTime?
+  rejectionReason String?  @db.Text
+
+  expiresAt       DateTime? // Document expiration
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("id_verifications")
+}
+
+// ========================================
+// REPUTATION SYSTEM
+// ========================================
+
+model Reputation {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  score           Int      @default(0)
+  level           String   @default("newcomer") // "newcomer", "member", "trusted", "veteran", "legendary"
+  totalRatings    Int      @default(0)
+  positiveRatings Int      @default(0)
+  negativeRatings Int      @default(0)
+
+  // Breakdown by category
+  communicationScore  Int @default(0)
+  reliabilityScore    Int @default(0)
+  collaborationScore  Int @default(0)
+
+  // Badges earned
+  badges          ReputationBadge[]
+
+  lastCalculated  DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([score])
+  @@map("reputations")
+}
+
+model Rating {
+  id              String   @id @default(cuid())
+  fromUserId      String
+  toUserId        String
+  collaborationId String?
+
+  rating          Int      // 1-5
+  category        String   // "communication", "reliability", "collaboration"
+  comment         String?  @db.Text
+
+  isAnonymous     Boolean  @default(false)
+  isDisputed      Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([fromUserId, toUserId, collaborationId, category])
+  @@index([toUserId])
+  @@index([rating])
+  @@map("ratings")
+}
+
+model ReputationBadge {
+  id            String   @id @default(cuid())
+  reputationId  String
+  badgeType     String   // "early_adopter", "helpful", "verified", "super_collaborator"
+  name          String
+  description   String
+  imageUrl      String?
+  earnedAt      DateTime @default(now())
+
+  reputation    Reputation @relation(fields: [reputationId], references: [id], onDelete: Cascade)
+
+  @@index([reputationId])
+  @@map("reputation_badges")
+}
+
+// ========================================
+// ACTIVITY FEED
+// ========================================
+
+model Activity {
+  id          String   @id @default(cuid())
+  userId      String
+  actorId     String?  // User who performed the action (if different)
+  type        String   // "profile_update", "collaboration_joined", "group_created", "rating_received"
+  title       String
+  description String?  @db.Text
+  metadata    Json?    // Additional data
+
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("activities")
+}
+
+// ========================================
+// ONBOARDING
+// ========================================
+
+model OnboardingProgress {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+
+  currentStep           Int      @default(1)
+  totalSteps            Int      @default(6)
+  isComplete            Boolean  @default(false)
+
+  // Step completion tracking
+  profileCompleted      Boolean  @default(false)
+  locationAdded         Boolean  @default(false)
+  interestsAdded        Boolean  @default(false)
+  verificationStarted   Boolean  @default(false)
+  firstGroupJoined      Boolean  @default(false)
+  tourCompleted         Boolean  @default(false)
+
+  completedAt           DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+  @@map("onboarding_progress")
+}
+
+// ========================================
+// REAL-TIME MESSAGING (Enhanced)
+// ========================================
+
+model Conversation {
+  id            String   @id @default(cuid())
+  type          String   @default("direct") // "direct" or "group"
+  groupId       String?
+
+  lastMessageAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  participants  ConversationParticipant[]
+  messages      DirectMessage[]
+
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id              String   @id @default(cuid())
+  conversationId  String
+  userId          String
+
+  joinedAt        DateTime @default(now())
+  lastReadAt      DateTime @default(now())
+  isMuted         Boolean  @default(false)
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model DirectMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  senderId        String
+  content         String   @db.Text
+
+  type            String   @default("text") // "text", "image", "file", "system"
+  attachmentUrl   String?
+
+  isEdited        Boolean  @default(false)
+  editedAt        DateTime?
+
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("direct_messages")
+}
+
+// ========================================
+// PROPERTY SEARCH & FAVORITES
+// ========================================
+
+model PropertyFavorite {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  notes      String?  @db.Text
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property   PropertyListing @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@map("property_favorites")
+}
+
+model PropertySearch {
+  id          String   @id @default(cuid())
+  userId      String
+
+  query       String
+  filters     Json     // Search filters as JSON
+  resultCount Int
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("property_searches")
 }
 
