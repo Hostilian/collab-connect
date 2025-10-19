@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/Hostilian/collab-connect/compare/v1.2.0...v1.3.0) (2025-10-19)
+
+
+### Features
+
+* Add comprehensive Vercel deployment pipeline ([0bf08bf](https://github.com/Hostilian/collab-connect/commit/0bf08bf0c704243a467d77443d7630bb32e3ea8f))
+
 # [1.2.0](https://github.com/Hostilian/collab-connect/compare/v1.1.0...v1.2.0) (2025-10-19)
 
 
