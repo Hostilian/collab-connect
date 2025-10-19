@@ -1,9 +1,6 @@
-import {
-    CheckCircle,
-    ChevronRight,
-    ShieldCheck
-} from "lucide-react";
+import { CheckCircle, ChevronRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -161,11 +158,16 @@ export default function HomePage() {
         <div className="relative isolate -z-10 my-32">
           <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div className="mx-auto flex max-w-2xl flex-col gap-16 bg-white/5 px-6 py-16 ring-1 ring-white/10 sm:rounded-3xl sm:p-8 lg:mx-0 lg:max-w-none lg:flex-row lg:items-center lg:py-20 xl:gap-x-20 xl:px-20">
-              <img
-                className="h-96 w-full flex-none rounded-2xl object-cover shadow-xl lg:aspect-square lg:h-auto lg:max-w-sm"
-                src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
-                alt=""
-              />
+              <div className="h-96 w-full flex-none lg:aspect-square lg:h-auto lg:max-w-sm">
+                <Image
+                  className="rounded-2xl object-cover shadow-xl"
+                  src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
+                  alt="People collaborating at a desk"
+                  width={800}
+                  height={800}
+                  priority
+                />
+              </div>
               <div className="w-full flex-auto">
                 <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
                   Join the Movement

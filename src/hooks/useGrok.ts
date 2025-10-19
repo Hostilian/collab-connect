@@ -19,6 +19,22 @@ export function useGrok() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  type AnalyzeResult = {
+    intent: string;
+    sentiment: string;
+    urgency: string;
+  };
+
+  const isAnalyzeResult = (val: unknown): val is AnalyzeResult => {
+    if (!val || typeof val !== 'object') return false;
+    const obj = val as Record<string, unknown>;
+    return (
+      typeof obj.intent === 'string' &&
+      typeof obj.sentiment === 'string' &&
+      typeof obj.urgency === 'string'
+    );
+  };
+
   const chat = async (
     message: string,
     options: GrokOptions = {}
@@ -69,15 +85,11 @@ export function useGrok() {
     return typeof response === 'string' ? response : null;
   };
 
-  const analyzeMessage = async (message: string): Promise<{
-    intent: string;
-    sentiment: string;
-    urgency: string;
-  } | null> => {
+  const analyzeMessage = async (message: string): Promise<AnalyzeResult | null> => {
     const response = await chat(message, {
       action: 'analyzeMessage',
     });
-    return typeof response === 'object' ? response as any : null;
+    return isAnalyzeResult(response) ? response : null;
   };
 
   const getSearchSuggestions = async (
@@ -88,7 +100,9 @@ export function useGrok() {
       action: 'searchSuggestions',
       data: { limit },
     });
-    return Array.isArray(response) ? response : null;
+    return Array.isArray(response) && response.every((r) => typeof r === 'string')
+      ? (response as string[])
+      : null;
   };
 
   return {
