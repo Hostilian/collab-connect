@@ -305,9 +305,64 @@ async function sendPushNotification(
   userId: string,
   payload: { title: string; body: string; data?: Record<string, unknown> }
 ): Promise<void> {
-  // TODO: Implement Web Push API
-  // This would require storing push subscriptions and using web-push library
-  console.log('Push notification:', userId, payload);
+  try {
+    // Get user's push subscriptions
+    const subscriptions = await prisma.pushSubscription.findMany({
+      where: { userId, isActive: true },
+    });
+
+    if (subscriptions.length === 0) {
+      console.log('No active push subscriptions for user:', userId);
+      return;
+    }
+
+    const webpush = (await import('web-push')).default;
+    
+    // Configure VAPID keys (should be in environment variables)
+    webpush.setVapidDetails(
+      `mailto:${process.env.VAPID_EMAIL || 'admin@collabconnect.com'}`,
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    );
+
+    // Send to all user's subscriptions
+    const notificationPayload = JSON.stringify({
+      title: payload.title,
+      body: payload.body,
+      icon: '/icon-192x192.png',
+      badge: '/badge-72x72.png',
+      data: payload.data || {},
+      timestamp: Date.now(),
+    });
+
+    const sendPromises = subscriptions.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          },
+          notificationPayload
+        );
+      } catch (error: any) {
+        // If subscription is invalid, mark it as inactive
+        if (error.statusCode === 404 || error.statusCode === 410) {
+          await prisma.pushSubscription.update({
+            where: { id: sub.id },
+            data: { isActive: false },
+          });
+        }
+        console.error('Failed to send push notification:', error);
+      }
+    });
+
+    await Promise.allSettled(sendPromises);
+  } catch (error) {
+    console.error('Push notification error:', error);
+  }
 }
 
 /**
