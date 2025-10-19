@@ -4,7 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only when needed to avoid build-time errors
+const getResendClient = () => {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not configured');
+  }
+  return new Resend(process.env.RESEND_API_KEY);
+};
 
 export async function sendVerificationEmail(userId: string, email: string, name: string) {
     try {
@@ -26,6 +32,7 @@ export async function sendVerificationEmail(userId: string, email: string, name:
         const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify?token=${token}`;
 
         // Send email using Resend
+        const resend = getResendClient();
         const { data, error } = await resend.emails.send({
             from: 'CollabConnect <onboarding@collabconnect.com>',
             to: email,
@@ -94,6 +101,7 @@ export async function sendEmail(options: {
             ? emailPayload
             : { ...emailPayload, text: options.subject };
 
+        const resend = getResendClient();
         const { error } = await resend.emails.send(finalPayload as { from: string; to: string; subject: string; html?: string; text: string });
 
         if (error) {
