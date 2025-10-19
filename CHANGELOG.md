@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/Hostilian/collab-connect/compare/v1.3.0...v1.3.1) (2025-10-19)
+
+
+### Bug Fixes
+
+* resolve deployment issues - Fix Tailwind CSS errors, Resend initialization, and missing dependencies ([19fdfae](https://github.com/Hostilian/collab-connect/commit/19fdfaeebeff3e5eec0b5396d5cee98e52775c94))
+
 # [1.3.0](https://github.com/Hostilian/collab-connect/compare/v1.2.0...v1.3.0) (2025-10-19)
 
 
