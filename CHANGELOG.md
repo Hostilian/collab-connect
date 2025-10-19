@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/Hostilian/collab-connect/compare/v1.3.2...v1.4.0) (2025-10-19)
+
+
+### Bug Fixes
+
+* type-safe Grok hook and optimize homepage image with next/image ([65a9c30](https://github.com/Hostilian/collab-connect/commit/65a9c301cb79ebd427322ca2173831d4bf466af9))
+
+
+### Features
+
+* redesign homepage + XAI integration + docs and tools (sanitized) ([9b0d7e8](https://github.com/Hostilian/collab-connect/commit/9b0d7e854ea579cd1e5ad176614277c13b4e99b8))
+
 ## [1.3.2](https://github.com/Hostilian/collab-connect/compare/v1.3.1...v1.3.2) (2025-10-19)
 
 
