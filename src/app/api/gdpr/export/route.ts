@@ -82,17 +82,17 @@ export async function POST(_request: NextRequest) {
         activeCollabs: profile.activeCollabs,
         isAvailable: profile.isAvailable,
         availabilityNote: profile.availabilityNote,
-        hobbies: profile.hobbies.map(h => h.hobby.name),
-        interests: profile.interests.map(i => i.interest.name),
+  hobbies: profile.hobbies.map((h: { hobby: { name: string } }) => h.hobby.name),
+  interests: profile.interests.map((i: { interest: { name: string } }) => i.interest.name),
       } : null,
-      notifications: notifications.map(n => ({
+      notifications: notifications.map((n: { type: string; title: string | null; message: string | null; isRead: boolean; createdAt: Date }) => ({
         type: n.type,
         title: n.title,
         message: n.message,
         isRead: n.isRead,
         createdAt: n.createdAt,
       })),
-      collaborations: collaborations.map(c => ({
+      collaborations: collaborations.map((c: { title: string; description: string | null; type: string; status: string; ownerId: string; startedAt: Date | null; completedAt: Date | null }) => ({
         title: c.title,
         description: c.description,
         type: c.type,
@@ -101,13 +101,13 @@ export async function POST(_request: NextRequest) {
         startedAt: c.startedAt,
         completedAt: c.completedAt,
       })),
-      groups: groupMemberships.map(gm => ({
+      groups: groupMemberships.map((gm: { group: { name: string; description: string | null }; role: string; joinedAt: Date }) => ({
         name: gm.group.name,
         description: gm.group.description,
         role: gm.role,
         joinedAt: gm.joinedAt,
       })),
-      messages: messages.map(m => ({
+      messages: messages.map((m: { content: string; createdAt: Date }) => ({
         content: m.content,
         createdAt: m.createdAt,
       })),

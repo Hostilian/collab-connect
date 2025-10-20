@@ -132,7 +132,7 @@ export async function verify2FAToken(
   const hashedToken = hashBackupCode(token);
   if (user.backupCodes.includes(hashedToken)) {
     // Remove used backup code
-    const remainingCodes = user.backupCodes.filter((code) => code !== hashedToken);
+    const remainingCodes = user.backupCodes.filter((code: string) => code !== hashedToken);
     await prisma.user.update({
       where: { id: userId },
       data: { backupCodes: remainingCodes },
@@ -170,7 +170,7 @@ export async function getRemainingBackupCodes(userId: string): Promise<number> {
  */
 export async function regenerateBackupCodes(userId: string): Promise<string[]> {
   const newCodes = generateBackupCodes();
-  const hashedCodes = newCodes.map(hashBackupCode);
+  const hashedCodes = newCodes.map((code: string) => hashBackupCode(code));
 
   await prisma.user.update({
     where: { id: userId },

@@ -171,18 +171,18 @@ export async function recalculateReputation(userId: string) {
     const categoryScores: Record<string, number> = {};
 
     for (const category of categories) {
-      const categoryRatings = ratings.filter(r => r.category === category);
+      const categoryRatings = ratings.filter((r: { category: string; rating: number }) => r.category === category);
       if (categoryRatings.length > 0) {
-        const avg = categoryRatings.reduce((sum: number, r) => sum + r.rating, 0) / categoryRatings.length;
+        const avg = categoryRatings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / categoryRatings.length;
         categoryScores[`${category}Score`] = Math.round(avg * 20); // Scale to 0-100
       }
     }
 
     // Calculate overall score
     const totalRatings = ratings.length;
-    const avgRating = ratings.reduce((sum: number, r) => sum + r.rating, 0) / totalRatings;
-    const positiveRatings = ratings.filter(r => r.rating >= 4).length;
-    const negativeRatings = ratings.filter(r => r.rating <= 2).length;
+  const avgRating = ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / totalRatings;
+  const positiveRatings = ratings.filter((r: { rating: number }) => r.rating >= 4).length;
+  const negativeRatings = ratings.filter((r: { rating: number }) => r.rating <= 2).length;
 
     // Score formula: (average * 20) * log(totalRatings + 1) * positivity multiplier
     const positivityMultiplier = totalRatings > 0
@@ -238,7 +238,7 @@ async function awardBadges(userId: string) {
 
     if (!reputation) return;
 
-    const existingBadges = new Set(reputation.badges.map(b => b.badgeType));
+  const existingBadges = new Set(reputation.badges.map((b: { badgeType: string }) => b.badgeType));
     const newBadges: string[] = [];
 
     // Early Adopter - First 1000 users
@@ -298,7 +298,7 @@ async function awardBadges(userId: string) {
         });
 
         if (ratings.length >= 10) {
-          const avg = ratings.reduce((sum: number, r) => sum + r.rating, 0) / ratings.length;
+          const avg = ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length;
           if (avg >= 4.5) {
             newBadges.push(badgeType);
           }
@@ -368,7 +368,7 @@ export async function getRatingsBreakdown(userId: string) {
   const breakdown = {
     total: ratings.length,
     average: ratings.length > 0
-      ? ratings.reduce((sum: number, r) => sum + r.rating, 0) / ratings.length
+      ? ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length
       : 0,
     byRating: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     byCategory: {
@@ -379,19 +379,19 @@ export async function getRatingsBreakdown(userId: string) {
   };
 
   // Count by rating value
-  ratings.forEach((r) => {
+  ratings.forEach((r: { rating: number }) => {
     if (r.rating >= 1 && r.rating <= 5) {
       breakdown.byRating[r.rating as 1 | 2 | 3 | 4 | 5]++;
     }
   });
 
   // Calculate by category
-  (['communication', 'reliability', 'collaboration'] as RatingCategory[]).forEach(category => {
-    const categoryRatings = ratings.filter(r => r.category === category);
+  (['communication', 'reliability', 'collaboration'] as RatingCategory[]).forEach((category) => {
+    const categoryRatings = ratings.filter((r: { category: RatingCategory; rating: number }) => r.category === category);
     if (categoryRatings.length > 0) {
       breakdown.byCategory[category] = {
         count: categoryRatings.length,
-        average: categoryRatings.reduce((sum: number, r) => sum + r.rating, 0) / categoryRatings.length,
+        average: categoryRatings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / categoryRatings.length,
       };
     }
   });

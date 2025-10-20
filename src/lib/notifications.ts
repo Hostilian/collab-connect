@@ -335,7 +335,7 @@ async function sendPushNotification(
       timestamp: Date.now(),
     });
 
-    const sendPromises = subscriptions.map(async (sub) => {
+  const sendPromises = subscriptions.map(async (sub: { id: string; endpoint: string; p256dh: string; auth: string }) => {
       try {
         await webpush.sendNotification(
           {

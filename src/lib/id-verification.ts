@@ -190,7 +190,7 @@ export async function getPendingVerifications(limit = 50) {
 
   // Fetch user details separately
   const verificationsWithUsers = await Promise.all(
-    verifications.map(async (v) => {
+    verifications.map(async (v: { userId: string }) => {
       const user = await prisma.user.findUnique({
         where: { id: v.userId },
         select: {
@@ -222,7 +222,7 @@ export async function getVerificationStats() {
 
   return {
     total,
-    byStatus: stats.reduce((acc: Record<string, number>, stat) => {
+    byStatus: stats.reduce((acc: Record<string, number>, stat: { status: string; _count: number }) => {
       acc[stat.status] = stat._count;
       return acc;
     }, {} as Record<string, number>),
