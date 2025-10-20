@@ -1,6 +1,7 @@
 {
-  "name": "collab-connect",
-  "version": "1.4.0",
+  "name": "courier-connect",
+  "version": "2.0.0",
+  "description": "Simple courier service. Customers get stuff delivered. Couriers make money. That's it.",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
