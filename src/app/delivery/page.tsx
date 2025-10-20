@@ -1,6 +1,7 @@
 // Look, either you want something delivered or you don't. Let's make it easy.
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import AddressInput from "@/components/delivery/AddressInput";
 
 export default function DeliveryFormPage() {
   const t = useTranslations();
@@ -27,11 +28,11 @@ export default function DeliveryFormPage() {
       <form className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md flex flex-col gap-4" onSubmit={e => {e.preventDefault(); calculatePrice();}}>
         <label className="font-semibold text-gray-800">
           {t("form.pickup")}
-          <input type="text" value={pickup} onChange={e => setPickup(e.target.value)} className="mt-1 block w-full rounded border border-gray-300 p-2" required />
+          <AddressInput value={pickup} onChange={setPickup} placeholder={t("form.pickup")} />
         </label>
         <label className="font-semibold text-gray-800">
           {t("form.delivery")}
-          <input type="text" value={delivery} onChange={e => setDelivery(e.target.value)} className="mt-1 block w-full rounded border border-gray-300 p-2" required />
+          <AddressInput value={delivery} onChange={setDelivery} placeholder={t("form.delivery")} />
         </label>
         <label className="font-semibold text-gray-800">
           {t("form.date")}
