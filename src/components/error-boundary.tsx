@@ -1,7 +1,7 @@
 'use client';
 
-import { Component, ReactNode } from 'react';
 import Link from 'next/link';
+import { Component, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
-    
+
     // Send to error tracking service (Sentry)
     if (typeof window !== 'undefined') {
       const w = window as unknown as { Sentry?: { captureException: (error: Error) => void } };

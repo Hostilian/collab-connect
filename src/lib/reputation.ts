@@ -171,7 +171,7 @@ export async function recalculateReputation(userId: string) {
     const categoryScores: Record<string, number> = {};
 
     for (const category of categories) {
-      const categoryRatings = ratings.filter((r: { category: string; rating: number }) => r.category === category);
+  const categoryRatings = ratings.filter((r: { category: string; rating: number }) => r.category === category);
       if (categoryRatings.length > 0) {
         const avg = categoryRatings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / categoryRatings.length;
         categoryScores[`${category}Score`] = Math.round(avg * 20); // Scale to 0-100
@@ -387,11 +387,11 @@ export async function getRatingsBreakdown(userId: string) {
 
   // Calculate by category
   (['communication', 'reliability', 'collaboration'] as RatingCategory[]).forEach((category) => {
-    const categoryRatings = ratings.filter((r) => r.category === category);
+  const categoryRatings = ratings.filter((r: { category: string; rating: number }) => r.category === category);
     if (categoryRatings.length > 0) {
       breakdown.byCategory[category] = {
         count: categoryRatings.length,
-        average: categoryRatings.reduce((sum, r) => sum + r.rating, 0) / categoryRatings.length,
+        average: categoryRatings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / categoryRatings.length,
       };
     }
   });

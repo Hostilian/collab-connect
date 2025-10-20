@@ -1,5 +1,5 @@
 // Well, would you look at that. It's a Google Maps address input.
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function AddressInput({ value, onChange, placeholder }: { value: string; onChange: (val: string) => void; placeholder: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +20,7 @@ export default function AddressInput({ value, onChange, placeholder }: { value: 
     return () => {
       window.google.maps.event.clearInstanceListeners(autocomplete);
     };
-  }, []);
+  }, [onChange]);
 
   return (
     <input

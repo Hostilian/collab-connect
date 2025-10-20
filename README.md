@@ -68,7 +68,7 @@ And houses? Same thing. Your buddy can't afford that place, but what if five of 
 - **Styling**: Tailwind CSS v4
 - **i18n**: next-intl for multi-language support
 - **State**: Zustand for client state management
-- **Authentication**: (Coming soon - NextAuth.js)
+**Authentication**: NextAuth.js
 
 ## Getting Started
 

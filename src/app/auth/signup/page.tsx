@@ -1,10 +1,10 @@
 'use client'
 
+import { formSchemas } from '@/lib/validation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { formSchemas } from '@/lib/validation'
 import { z } from 'zod'
 
 export default function SignUpPage() {

@@ -1,8 +1,8 @@
 // src/app/map/page.tsx
 'use client';
 
-import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import dynamic from 'next/dynamic';
 
 // Dynamically import the map component (heavy dependency)
 // This reduces initial bundle size significantly

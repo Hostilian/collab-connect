@@ -312,7 +312,7 @@ async function sendPushNotification(
     });
 
     if (subscriptions.length === 0) {
-      console.log('No active push subscriptions for user:', userId);
+  // No active push subscriptions for user: userId
       return;
     }
 

@@ -1,7 +1,10 @@
+"use client";
 // Look, either you want something delivered or you don't. Let's make it easy.
-import { useState } from "react";
-import { useTranslations } from "next-intl";
 import AddressInput from "@/components/delivery/AddressInput";
+import RouteMap from "@/components/delivery/RouteMap";
+import { calculatePrice } from "@/lib/pricing";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 export default function DeliveryFormPage() {
   const t = useTranslations();
@@ -11,21 +14,29 @@ export default function DeliveryFormPage() {
   const [time, setTime] = useState("");
   const [itemType, setItemType] = useState("envelope");
   const [price, setPrice] = useState<number | null>(null);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
 
-  // Simple price calculation (replace with real algorithm later)
-  function calculatePrice() {
-    // This is not rocket science, folks
-    let base = 100;
-    if (itemType === "large_package") base += 100;
-    if (itemType === "fragile") base += 80;
-    setPrice(base);
+  // Callback to receive distance from RouteMap
+  function handleDistanceUpdate(km: number | null) {
+    setDistanceKm(km);
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (distanceKm && date) {
+      const scheduledDate = new Date(date + 'T' + (time || '12:00'));
+  const result = calculatePrice({ distanceKm, scheduledDate, itemType: itemType as 'envelope' | 'small_package' | 'medium_package' | 'large_package' | 'fragile' });
+      setPrice(result.totalPrice);
+    } else {
+      setPrice(null);
+    }
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-yellow-100 via-white to-yellow-50 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold mb-2 text-yellow-700">{t("app.title")}</h1>
       <p className="mb-6 text-gray-700">{t("app.description")}</p>
-      <form className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md flex flex-col gap-4" onSubmit={e => {e.preventDefault(); calculatePrice();}}>
+      <form className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md flex flex-col gap-4" onSubmit={handleSubmit}>
         <label className="font-semibold text-gray-800">
           {t("form.pickup")}
           <AddressInput value={pickup} onChange={setPickup} placeholder={t("form.pickup")} />
@@ -61,6 +72,9 @@ export default function DeliveryFormPage() {
           </div>
         )}
       </form>
+      <div className="w-full max-w-md mt-6">
+        <RouteMap pickup={pickup} delivery={delivery} onDistanceUpdate={handleDistanceUpdate} />
+      </div>
     </main>
   );
 }

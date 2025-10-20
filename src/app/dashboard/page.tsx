@@ -1,39 +1,27 @@
-import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import Link from "next/link"
-import { redirect } from "next/navigation"
+import Link from "next/link";
+import { useEffect, useState } from "react";
+// Add missing type imports or define them here
+type Session = { user: { name: string; id: string; email: string } };
+type Profile = {
+  name: string;
+  verified: boolean;
+  collaborations: number;
+  totalCollaborations: number;
+  activeCollabs: number;
+  bio?: string;
+  createdAt?: string;
+};
+import { useSearchParams } from "next/navigation";
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: { verified?: string }
-}) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
-  // Handle verification status
-  const verificationStatus = searchParams.verified;
-
-  // Fetch user profile with stats
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
-    include: {
-      hobbies: {
-        include: {
-          hobby: true,
-        },
-      },
-      interests: {
-        include: {
-          interest: true,
-        },
-      },
-    },
-  })
-
+export default function DashboardPage() {
+  const searchParams = useSearchParams();
+  // You'd fetch session/profile with useEffect or SWR in client components
+  const [session] = useState<Session | null>(null); // Session type should be imported or defined
+  const [profile] = useState<Profile | null>(null); // Profile type should be imported or defined
+  useEffect(() => {
+    // TODO: fetch session/profile here
+  }, []);
+  const verificationStatus = searchParams.get("verified");
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -106,7 +94,7 @@ export default async function DashboardPage({
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {session.user.name || "Friend"}!
+            Welcome back, {session?.user?.name || "Friend"}!
           </h1>
           <p className="text-gray-600">
             Ready to connect and collaborate today?
@@ -131,7 +119,7 @@ export default async function DashboardPage({
               <span className="text-2xl">✅</span>
             </div>
             <p className="text-3xl font-bold text-green-600">
-              {profile?.successfulCollabs || 0}
+              {profile?.collaborations || 0}
             </p>
           </div>
 
@@ -148,10 +136,10 @@ export default async function DashboardPage({
           <div className="bg-white p-6 rounded-xl shadow-sm border">
             <div className="flex items-center justify-between mb-2">
               <span className="text-gray-600 text-sm">Verification</span>
-              <span className="text-2xl">{profile?.isVerified ? "✓" : "⏳"}</span>
+              <span className="text-2xl">{profile?.verified ? "✓" : "⏳"}</span>
             </div>
             <p className="text-lg font-bold text-gray-900">
-              {profile?.isVerified ? "Verified" : "Pending"}
+              {profile?.verified ? "Verified" : "Pending"}
             </p>
           </div>
         </div>

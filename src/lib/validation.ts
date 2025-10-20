@@ -8,7 +8,7 @@ import { z } from "zod";
 // Common validation schemas
 export const schemas = {
   email: z.string().email("Invalid email address").toLowerCase().trim(),
-  
+
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -17,7 +17,7 @@ export const schemas = {
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[0-9]/, "Password must contain at least one number")
     .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character"),
-  
+
   username: z
     .string()
     .min(3, "Username must be at least 3 characters")
@@ -25,35 +25,35 @@ export const schemas = {
     .regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, hyphens, and underscores")
     .toLowerCase()
     .trim(),
-  
+
   name: z
     .string()
     .min(1, "Name is required")
     .max(100, "Name must be less than 100 characters")
     .trim()
     .transform(sanitizeHtml),
-  
+
   bio: z
     .string()
     .max(500, "Bio must be less than 500 characters")
     .optional()
     .transform((val) => (val ? sanitizeHtml(val) : val)),
-  
+
   url: z.string().url("Invalid URL").max(2048, "URL too long"),
-  
+
   uuid: z.string().uuid("Invalid ID format"),
-  
+
   latitude: z.number().min(-90).max(90),
-  
+
   longitude: z.number().min(-180).max(180),
-  
+
   phoneNumber: z
     .string()
     .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format")
     .optional(),
-  
+
   date: z.coerce.date(),
-  
+
   slug: z
     .string()
     .min(1)
@@ -68,7 +68,7 @@ export const schemas = {
  */
 export function sanitizeHtml(input: string): string {
   if (!input) return input;
-  
+
   return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
@@ -87,7 +87,7 @@ export function sanitizeHtml(input: string): string {
  */
 export function sanitizeSql(input: string): string {
   if (!input) return input;
-  
+
   return input
     .replace(/['";-]/g, "")
     .replace(/(\bOR\b|\bAND\b)\s+\d+\s*=\s*\d+/gi, "")
@@ -109,7 +109,7 @@ export const fileValidation = {
       (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type),
       "Only JPEG, PNG, WebP, and GIF images are allowed"
     ),
-  
+
   document: z
     .instanceof(File)
     .refine((file) => file.size <= 10 * 1024 * 1024, "Document must be less than 10MB")
@@ -148,7 +148,7 @@ export const formSchemas = {
     email: schemas.email,
     password: z.string().min(1, "Password is required"),
   }),
-  
+
   register: z
     .object({
       email: schemas.email,
@@ -161,7 +161,7 @@ export const formSchemas = {
       message: "Passwords don't match",
       path: ["confirmPassword"],
     }),
-  
+
   profile: z.object({
     name: schemas.name,
     bio: schemas.bio,
@@ -169,7 +169,7 @@ export const formSchemas = {
     website: schemas.url.optional().or(z.literal("")),
     phoneNumber: schemas.phoneNumber,
   }),
-  
+
   group: z.object({
     name: z.string().min(3).max(100).trim(),
     description: z.string().min(10).max(1000).trim(),
@@ -177,7 +177,7 @@ export const formSchemas = {
     isPublic: z.boolean(),
     maxMembers: z.number().min(2).max(1000).optional(),
   }),
-  
+
   message: z.object({
     content: z.string().min(1).max(2000).trim().transform(sanitizeHtml),
     recipientId: schemas.uuid.optional(),

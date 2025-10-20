@@ -114,7 +114,7 @@ export async function sendPhoneVerificationOTP(
       });
     } else {
       // Log OTP for development
-      console.log(`[DEV] OTP for ${formattedPhone}: ${otp}`);
+  // [DEV] OTP for ${formattedPhone}: ${otp}
     }
 
     return {

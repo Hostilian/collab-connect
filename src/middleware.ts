@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Simple in-memory rate limiter (for production, use Redis)
 const rateLimit = new Map<string, { count: number; resetTime: number }>();
@@ -95,7 +95,7 @@ export const config = {
     /*
      * Match all request paths except:
      * - _next/static (static files)
-     * - _next/image (image optimization files)  
+     * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
      */
