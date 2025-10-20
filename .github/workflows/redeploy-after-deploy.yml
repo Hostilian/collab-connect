@@ -1,0 +1,49 @@
+name: Redeploy 10 minutes after deploy
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Vercel"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  redeploy-after-main:
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Wait 10 minutes before redeploy
+        run: |
+          echo "Sleeping 10 minutes before triggering redeploy..."
+          sleep $((10 * 60))
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Ensure on main
+        run: |
+          git fetch origin main
+          git checkout main || git checkout -B main
+          git pull --ff-only origin main
+
+      - name: Create empty commit to trigger redeploy
+        run: |
+          git commit --allow-empty -m "ci: auto-redeploy 10 minutes after deploy (run ${{ github.run_id }})"
+          git push origin main
+
+      - name: Add summary
+        run: |
+          echo "## Auto redeploy triggered" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: Deploy to Vercel workflow completed on main" >> $GITHUB_STEP_SUMMARY
+          echo "- Delay: 10 minutes" >> $GITHUB_STEP_SUMMARY
