@@ -1,0 +1,56 @@
+name: Delayed redeploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      delayMinutes:
+        description: 'Delay (minutes) before forcing a redeploy'
+        required: false
+        default: '10'
+
+permissions:
+  contents: write
+
+jobs:
+  wait-and-push:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: collab-connect-delayed-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Wait for the specified delay
+        shell: bash
+        run: |
+          MIN=${{ github.event.inputs.delayMinutes }}
+          if [ -z "$MIN" ]; then MIN=10; fi
+          echo "Sleeping for $MIN minute(s) before forcing redeploy..."
+          # Convert minutes to seconds
+          S=$(( 60 * MIN ))
+          sleep "$S"
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Ensure on main
+        run: |
+          git fetch origin main
+          git checkout main || git checkout -B main
+          git pull --ff-only origin main
+
+      - name: Create empty commit to trigger deploy
+        run: |
+          git commit --allow-empty -m "ci: delayed redeploy via workflow (run ${{ github.run_id }})"
+          git push origin main
+
+      - name: Add summary
+        run: |
+          echo "## Delayed redeploy triggered" >> $GITHUB_STEP_SUMMARY
+          echo "- Delay: ${{ github.event.inputs.delayMinutes || '10' }} minutes" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: created empty commit to trigger 'Deploy to Vercel' workflow" >> $GITHUB_STEP_SUMMARY
