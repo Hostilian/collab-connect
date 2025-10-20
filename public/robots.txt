@@ -1,0 +1,13 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/verify-email*
+Disallow: /auth/reset-password*
+
+# Sitemap
+Sitemap: https://collab-connect.vercel.app/sitemap.xml
+
+# Crawl delay (optional, be respectful)
+Crawl-delay: 1
