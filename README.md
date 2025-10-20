@@ -1,11 +1,14 @@
 # CollabConnect 🤝
 
 [![CI](https://github.com/Hostilian/collab-connect/actions/workflows/ci.yml/badge.svg)](https://github.com/Hostilian/collab-connect/actions/workflows/ci.yml)
+[![Deploy](https://github.com/Hostilian/collab-connect/actions/workflows/deploy-vercel.yml/badge.svg)](https://github.com/Hostilian/collab-connect/actions/workflows/deploy-vercel.yml)
 [![CodeQL](https://github.com/Hostilian/collab-connect/actions/workflows/codeql.yml/badge.svg)](https://github.com/Hostilian/collab-connect/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/Hostilian/collab-connect/branch/main/graph/badge.svg)](https://codecov.io/gh/Hostilian/collab-connect)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **The platform that connects people to fight back against big institutions and collaborate on life's biggest challenges.**
+
+Live: https://collab-connect.vercel.app (or see latest run summary for exact URL)
 
 ## The Vision
 
@@ -119,6 +122,15 @@ npm run typecheck   # Run TypeScript checks
 npm test            # Run tests
 npm run test:coverage  # Run tests with coverage
 npm run ci          # Run all CI checks locally
+```
+
+### CI/CD
+
+```bash
+# Manually trigger deploy from Actions UI (workflow_dispatch is enabled)
+# Or force a redeploy by pushing an empty commit
+git commit --allow-empty -m "ci: redeploy"
+git push
 ```
 
 ## Documentation
