@@ -77,6 +77,33 @@ jobs:
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview
 
+      - name: Verify core app env vars (preview)
+        run: |
+          set -e
+          # Detect env file produced by vercel pull
+          ENV_FILE=""
+          for f in .env.preview.local .env.local .env .vercel/.env.preview.local .vercel/.env; do
+            if [ -f "$f" ]; then ENV_FILE="$f"; break; fi
+          done
+          if [ -z "$ENV_FILE" ]; then
+            echo "No env file found after vercel pull (preview)." >&2
+            ls -la . .vercel || true
+            exit 1
+          fi
+          echo "Using env file: $ENV_FILE"
+          REQUIRED=(DATABASE_URL NEXTAUTH_SECRET NEXTAUTH_URL XAI_API_KEY)
+          MISSING=0
+          for VAR in "${REQUIRED[@]}"; do
+            if ! grep -E "^${VAR}=" "$ENV_FILE" >/dev/null; then
+              echo "Missing ${VAR} in $ENV_FILE" >&2
+              MISSING=1
+            fi
+          done
+          if [ $MISSING -eq 1 ]; then
+            echo "One or more required app env vars are missing. Configure them in Vercel Project Settings." >&2
+            exit 1
+          fi
+
       - name: Build Project Artifacts
         run: vercel build
 
@@ -134,6 +161,33 @@ jobs:
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production
+
+      - name: Verify core app env vars (production)
+        run: |
+          set -e
+          # Detect env file produced by vercel pull
+          ENV_FILE=""
+          for f in .env.production.local .env.local .env .vercel/.env.production.local .vercel/.env; do
+            if [ -f "$f" ]; then ENV_FILE="$f"; break; fi
+          done
+          if [ -z "$ENV_FILE" ]; then
+            echo "No env file found after vercel pull (production)." >&2
+            ls -la . .vercel || true
+            exit 1
+          fi
+          echo "Using env file: $ENV_FILE"
+          REQUIRED=(DATABASE_URL NEXTAUTH_SECRET NEXTAUTH_URL XAI_API_KEY)
+          MISSING=0
+          for VAR in "${REQUIRED[@]}"; do
+            if ! grep -E "^${VAR}=" "$ENV_FILE" >/dev/null; then
+              echo "Missing ${VAR} in $ENV_FILE" >&2
+              MISSING=1
+            fi
+          done
+          if [ $MISSING -eq 1 ]; then
+            echo "One or more required app env vars are missing. Configure them in Vercel Project Settings." >&2
+            exit 1
+          fi
 
       - name: Build Project Artifacts
         run: vercel build --prod
