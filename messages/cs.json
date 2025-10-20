@@ -1,0 +1,16 @@
+{
+  "app.title": "Kurýr Connect - Doručování pro každého",
+  "app.description": "Potřebujete něco doručit? Zadejte trasu, vyberte čas, a kurýr to zařídí. Žádná registrace pro zákazníky.",
+  "form.pickup": "Místo vyzvednutí",
+  "form.delivery": "Místo doručení",
+  "form.date": "Datum doručení",
+  "form.time": "Čas doručení",
+  "form.itemType": "Typ zásilky",
+  "form.price": "Cena",
+  "form.submit": "Objednat doručení",
+  "form.envelope": "Obálka",
+  "form.small_package": "Malý balíček",
+  "form.medium_package": "Střední balíček",
+  "form.large_package": "Velký balík",
+  "form.fragile": "Křehké"
+}

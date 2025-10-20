@@ -1,0 +1,16 @@
+{
+  "app.title": "Kurye Connect - Herkes için teslimat",
+  "app.description": "Bir şey mi göndermek istiyorsunuz? Rotanızı girin, zamanı seçin, kurye halleder. Müşteriler için kayıt yok.",
+  "form.pickup": "Alım Yeri",
+  "form.delivery": "Teslimat Yeri",
+  "form.date": "Teslimat Tarihi",
+  "form.time": "Teslimat Saati",
+  "form.itemType": "Eşya Türü",
+  "form.price": "Fiyat",
+  "form.submit": "Teslimat Talebi",
+  "form.envelope": "Zarf",
+  "form.small_package": "Küçük Paket",
+  "form.medium_package": "Orta Paket",
+  "form.large_package": "Büyük Paket",
+  "form.fragile": "Kırılabilir"
+}

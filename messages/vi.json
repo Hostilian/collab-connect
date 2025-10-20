@@ -1,0 +1,16 @@
+{
+  "app.title": "Courier Connect - Giao hàng cho mọi người",
+  "app.description": "Cần giao hàng? Nhập tuyến đường, chọn thời gian, và tài xế sẽ lo liệu. Khách hàng không cần đăng ký.",
+  "form.pickup": "Nơi lấy hàng",
+  "form.delivery": "Nơi giao hàng",
+  "form.date": "Ngày giao hàng",
+  "form.time": "Thời gian giao hàng",
+  "form.itemType": "Loại hàng",
+  "form.price": "Giá",
+  "form.submit": "Yêu cầu giao hàng",
+  "form.envelope": "Phong bì",
+  "form.small_package": "Gói nhỏ",
+  "form.medium_package": "Gói vừa",
+  "form.large_package": "Gói lớn",
+  "form.fragile": "Dễ vỡ"
+}
