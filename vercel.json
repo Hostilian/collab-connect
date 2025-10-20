@@ -66,10 +66,5 @@
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }
-  ],
-  "github": {
-    "enabled": true,
-    "autoAlias": true,
-    "silent": false
-  }
+  ]
 }
