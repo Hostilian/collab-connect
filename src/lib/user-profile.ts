@@ -1,9 +1,8 @@
 // This file handles user profile creation, verification, and history.
 // Norm Macdonald style: If the user's real, we'll know. If they're not, we'll know that too.
 
-import { prisma } from './prisma';
-import _fetch from 'node-fetch';
 import crypto from 'crypto';
+import { prisma } from './prisma';
 
 export interface UserProfile {
   id: string;

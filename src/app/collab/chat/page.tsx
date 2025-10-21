@@ -1,6 +1,5 @@
 // Real-time chat and collaboration page
 // Norm Macdonald style: If people want to talk, let them talk. If they want to collaborate, let them collaborate.
-import React from 'react';
 
 export default function ChatCollabPage() {
   return (

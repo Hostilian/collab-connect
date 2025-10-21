@@ -1,7 +1,7 @@
 "use client";
 // Multilingual translation component using LibreTranslate and MyMemory
+import { myMemoryTranslate, translateText } from "@/lib/i18n";
 import { useState } from "react";
-import { translateText, myMemoryTranslate } from "@/lib/i18n";
 
 interface TranslateTextProps {
   text: string;

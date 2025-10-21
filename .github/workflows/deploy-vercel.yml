@@ -194,9 +194,10 @@ jobs:
 
       - name: Deploy Production to Vercel
         id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --prod)
-          echo "production_url=$url" >> $GITHUB_OUTPUT
+          run: |
+            url=$(vercel deploy --prebuilt --prod)
+            echo "production_url=$url" >> $GITHUB_OUTPUT
+            zeit-token: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Run smoke tests
         run: |
@@ -214,6 +215,7 @@ jobs:
       - name: Notify deployment success
         uses: actions/github-script@v7
         with:
+              zeit-token: ${{ secrets.VERCEL_TOKEN }}
           script: |
             github.rest.repos.createCommitStatus({
               owner: context.repo.owner,

@@ -1,6 +1,5 @@
 // Data transparency page
 // Norm Macdonald style: If you want to see who's real, here's the dirt. If you want to see the company, here's the paperwork.
-import React from 'react';
 
 export default function TransparencyPage() {
   return (

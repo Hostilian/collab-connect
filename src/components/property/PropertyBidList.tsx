@@ -1,7 +1,7 @@
 "use client";
 // Property bidding list using Zillow and Land Registry APIs
+import { searchZillowListings } from "@/lib/property-bidding";
 import { useEffect, useState } from "react";
-import { searchZillowListings, getLandRegistryData as _getLandRegistryData } from "@/lib/property-bidding";
 
 interface PropertyBidListProps {
   location: string;

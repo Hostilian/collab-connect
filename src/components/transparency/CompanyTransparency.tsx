@@ -1,7 +1,7 @@
 "use client";
 // Company transparency component using OpenCorporates, EU Data Portal, GOV.UK, and Clearbit
+import { getCompanyData, getEUTransparencyData } from "@/lib/transparency";
 import { useState } from "react";
-import { getCompanyData, getEUTransparencyData, getUKTransparencyData as _getUKTransparencyData, getClearbitData as _getClearbitData } from "@/lib/transparency";
 
 interface CompanyTransparencyProps {
   companyName: string;

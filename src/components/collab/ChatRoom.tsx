@@ -1,7 +1,7 @@
 "use client";
 // Real-time chat room using Supabase Realtime and Socket.io
+import { connectSocket, sendMessage, subscribeToChannel } from "@/lib/collab-realtime";
 import { useEffect, useState } from "react";
-import { connectSocket, subscribeToChannel, sendMessage } from "@/lib/collab-realtime";
 
 interface ChatRoomProps {
   room: string;

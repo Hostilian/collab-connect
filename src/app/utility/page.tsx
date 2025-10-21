@@ -1,6 +1,5 @@
 // Visual and utility APIs page
 // Norm Macdonald style: If you want a QR code, here's a QR code. If you want a news feed, here's the news.
-import React from 'react';
 
 export default function UtilityPage() {
   return (

@@ -1,8 +1,8 @@
 "use client";
 // Visual and utility API panel: Unsplash, QR Code, IPify, News, JSONPlaceholder, Mocki.io
-import { useState } from "react";
-import { getUnsplashImages, getQRCodeUrl, getPublicIP, getNews, getFakeUsers, getMockData } from "@/lib/visual-utility";
+import { getFakeUsers, getMockData, getNews, getPublicIP, getQRCodeUrl, getUnsplashImages } from "@/lib/visual-utility";
 import Image from "next/image";
+import { useState } from "react";
 
 interface UnsplashImage {
   id: string;

@@ -1,6 +1,5 @@
 // Property bidding and listing page
 // Norm Macdonald style: If you want to buy a house, here's your shot. If you want to bid, go nuts.
-import React from 'react';
 
 export default function PropertyListingPage() {
   return (

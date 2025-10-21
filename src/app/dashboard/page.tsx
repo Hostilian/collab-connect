@@ -1,7 +1,8 @@
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { signOutAction } from './signout-action';
 "use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 // Add missing type imports or define them here
 type Session = { user: { name: string; id: string; email: string } };
 type Profile = {
@@ -13,7 +14,6 @@ type Profile = {
   bio?: string;
   createdAt?: string;
 };
-import { useSearchParams } from "next/navigation";
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
