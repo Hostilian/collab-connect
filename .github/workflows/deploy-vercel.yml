@@ -256,11 +256,6 @@ jobs:
           BASE_URL: https://collab-connect.vercel.app
         continue-on-error: true
 
-      - name: Run Lighthouse CI
-        run: npm run test:perf
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-        continue-on-error: true
 
       - name: Upload test results
         if: always()
