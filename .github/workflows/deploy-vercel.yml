@@ -209,7 +209,7 @@ jobs:
         run: |
           echo "Running smoke tests on production..."
           sleep 30
-          base="${{ steps.deploy.outputs.production_url }}"
+          base="https://collab-connect.vercel.app"
           echo "Checking home page: $base"
           curl -fsSL "$base" >/dev/null || exit 1
           echo "Checking live health: $base/api/health/live"
@@ -227,7 +227,7 @@ jobs:
               repo: context.repo.repo,
               sha: context.sha,
               state: 'success',
-              target_url: '${{ steps.deploy.outputs.production_url }}',
+              target_url: 'https://collab-connect.vercel.app',
               description: 'Deployed to Vercel',
               context: 'vercel/deployment'
             })
@@ -235,7 +235,7 @@ jobs:
       - name: Add production URL to job summary
         run: |
           echo "## Production deployment" >> $GITHUB_STEP_SUMMARY
-          echo "URL: ${{ steps.deploy.outputs.production_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "URL: https://collab-connect.vercel.app" >> $GITHUB_STEP_SUMMARY
 
   # Post-deployment validation
   post-deploy-validation:
