@@ -1,22 +1,240 @@
-name: Minimal Vercel Deploy
+name: Deploy to Vercel
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
-  deploy:
+  # Pre-deployment checks
+  pre-deploy-checks:
     runs-on: ubuntu-latest
+    concurrency:
+      group: collab-connect-checks-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm run test
+        env:
+          CI: true
+
+  # Deploy preview for PRs
+  deploy-preview:
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: github.event_name == 'pull_request'
+    concurrency:
+      group: collab-connect-preview-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-      - name: Deploy to Vercel
-        run: vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Verify Vercel secrets
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "Missing one or more required secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID" >&2
+            exit 1
+          fi
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview
+
+      - name: Verify core app env vars (preview)
+        run: |
+          set -e
+          # Detect env file produced by vercel pull
+          ENV_FILE=""
+          for f in .env.preview.local .env.local .env .vercel/.env.preview.local .vercel/.env; do
+            if [ -f "$f" ]; then ENV_FILE="$f"; break; fi
+          done
+          if [ -z "$ENV_FILE" ]; then
+            echo "No env file found after vercel pull (preview)." >&2
+            ls -la . .vercel || true
+            exit 1
+          fi
+          echo "Using env file: $ENV_FILE"
+          REQUIRED=(DATABASE_URL NEXTAUTH_SECRET NEXTAUTH_URL XAI_API_KEY)
+          MISSING=0
+          for VAR in "${REQUIRED[@]}"; do
+            if ! grep -E "^${VAR}=" "$ENV_FILE" >/dev/null; then
+              echo "Missing ${VAR} in $ENV_FILE" >&2
+              MISSING=1
+            fi
+          done
+          if [ $MISSING -eq 1 ]; then
+            echo "One or more required app env vars are missing. Configure them in Vercel Project Settings." >&2
+            exit 1
+          fi
+
+      - name: Build Project Artifacts
+        run: vercel build
+
+      - name: Deploy Preview to Vercel
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt)
+          echo "preview_url=$url" >> $GITHUB_OUTPUT
+
+      - name: Add preview URL to job summary
+        run: |
+          echo "## Preview deployment" >> $GITHUB_STEP_SUMMARY
+          echo "URL: ${{ steps.deploy.outputs.preview_url }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Preview deployment is ready!\n\n✨ Preview URL: ${{ steps.deploy.outputs.preview_url }}\n\n📝 Commit: ${context.sha}`
+            })
+
+  # Deploy to production
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: collab-connect-prod-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Verify Vercel secrets
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "Missing one or more required secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID" >&2
+            exit 1
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production
+      - name: Verify core app env vars (production)
+        run: |
+          set -e
+          ENV_FILE=""
+          for f in .env.production.local .env.local .env .vercel/.env.production.local .vercel/.env; do
+            if [ -f "$f" ]; then ENV_FILE="$f"; break; fi
+          done
+          if [ -z "$ENV_FILE" ]; then
+            echo "No env file found after vercel pull (production)." >&2
+            ls -la . .vercel || true
+            exit 1
+          fi
+          echo "Using env file: $ENV_FILE"
+          REQUIRED=(DATABASE_URL NEXTAUTH_SECRET NEXTAUTH_URL XAI_API_KEY)
+          MISSING=0
+          for VAR in "${REQUIRED[@]}"; do
+            if ! grep -E "^${VAR}=" "$ENV_FILE" >/dev/null; then
+              echo "Missing ${VAR} in $ENV_FILE" >&2
+              MISSING=1
+            fi
+          done
+          if [ $MISSING -eq 1 ]; then
+            echo "One or more required app env vars are missing. Configure them in Vercel Project Settings." >&2
+            exit 1
+          fi
+      - name: Build Project Artifacts
+        run: vercel build --prod
+      - name: Deploy Production to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: --prod
+      - name: Run smoke tests
+        continue-on-error: true
+        run: |
+          echo "Running smoke tests on production..."
+          sleep 30
+          base="https://collab-connect.vercel.app"
+          echo "Checking home page: $base"
+          curl -fsSL "$base" >/dev/null || exit 1
+          echo "Checking live health: $base/api/health/live"
+          curl -fsSL "$base/api/health/live" >/dev/null || exit 1
+          echo "Checking ready health: $base/api/health/ready"
+          curl -fsSL "$base/api/health/ready" >/dev/null || exit 1
+
+      - name: Notify deployment success
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              target_url: 'https://collab-connect.vercel.app',
+              description: 'Deployed to Vercel',
+              context: 'vercel/deployment'
+            })
+
+      - name: Add production URL to job summary
+        run: |
+          echo "## Production deployment" >> $GITHUB_STEP_SUMMARY
+          echo "URL: https://collab-connect.vercel.app" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run E2E tests against production
+        run: npm run test:e2e
+        env:
+          BASE_URL: https://collab-connect.vercel.app
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: test-results/
 

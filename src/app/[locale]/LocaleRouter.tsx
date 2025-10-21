@@ -1,3 +1,5 @@
+
+"use client";
 // This thing figures out what language the user wants. If it gets it wrong, blame the internet.
 import { usePathname } from 'next/navigation';
 

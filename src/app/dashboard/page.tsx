@@ -1,8 +1,8 @@
+"use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOutAction } from './signout-action';
-"use client";
 // Add missing type imports or define them here
 type Session = { user: { name: string; id: string; email: string } };
 type Profile = {
