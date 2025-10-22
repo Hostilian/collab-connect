@@ -19,7 +19,7 @@ vi.mock('@/lib/email', () => ({
 }));
 
 // Mock bcrypt
-vi.mock('bcrypt', () => ({
+vi.mock('bcryptjs', () => ({
   default: {
     hash: vi.fn(() => Promise.resolve('hashed_password')),
     compare: vi.fn(() => Promise.resolve(true)),

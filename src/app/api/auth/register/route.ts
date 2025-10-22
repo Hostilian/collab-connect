@@ -1,7 +1,7 @@
 import { sendVerificationEmail } from "@/lib/email"
 import { prisma } from "@/lib/prisma"
 import { createRateLimitResponse, getClientId, rateLimiters } from "@/lib/ratelimit"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
