@@ -1,16 +1,4 @@
 {
   "app.title": "Collab Connect - Collaboration for You",
-  "app.description": "Need something delivered? Enter your route, pick a time, and a courier will handle it. No registration for customers.",
-  "form.pickup": "Pickup Location",
-  "form.delivery": "Delivery Location",
-  "form.date": "Delivery Date",
-  "form.time": "Delivery Time",
-  "form.itemType": "Item Type",
-  "form.price": "Price",
-  "form.submit": "Request Delivery",
-  "form.envelope": "Envelope",
-  "form.small_package": "Small Package",
-  "form.medium_package": "Medium Package",
-  "form.large_package": "Large Package",
-  "form.fragile": "Fragile"
+  "app.description": "Find homes, invite friends, and collaborate on buying property together. No delivery features included."
 }
