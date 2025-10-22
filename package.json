@@ -89,7 +89,7 @@
     "@testing-library/react": "^16.0.0",
 
     "@types/bcryptjs": "^2.4.6",
-    "@types/maplibre-gl": "^1.13.2",
+    "@types/maplibre-gl": "^1.14.0",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
