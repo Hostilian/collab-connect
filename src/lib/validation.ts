@@ -137,7 +137,7 @@ export const envSchema = z.object({
   NEXTAUTH_SECRET: z.string().min(32),
   NEXTAUTH_URL: z.string().url(),
   XAI_API_KEY: z.string().min(1),
-  SENTRY_DSN: z.string().url().optional(),
+  // ...existing code...
 });
 
 /**
