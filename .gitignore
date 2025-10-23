@@ -30,6 +30,9 @@ next-env.d.ts
 .AppleDouble
 .LSOverride
 
+# exclude problematic repo
+check-my-repo/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

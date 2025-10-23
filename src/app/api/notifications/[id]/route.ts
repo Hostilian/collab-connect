@@ -9,6 +9,8 @@ import { archiveNotification, deleteNotification, markAsRead } from '@/lib/notif
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

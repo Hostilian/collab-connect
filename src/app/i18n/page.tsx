@@ -1,3 +1,5 @@
+
+"use client";
 // Multilingual support page
 // Norm Macdonald style: If you want to say it in Czech, say it in Czech. If you want Vietnamese, go wild.
 
