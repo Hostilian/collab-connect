@@ -8,8 +8,6 @@ import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'nodejs';
-
 export async function POST(_request: NextRequest) {
   try {
     const session = await auth();

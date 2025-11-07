@@ -10,8 +10,6 @@ import { rateLimit } from '@/lib/rate-limit';
 import { createWebhook, getUserWebhooks, WebhookEvent } from '@/lib/webhooks';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'nodejs';
-
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting
