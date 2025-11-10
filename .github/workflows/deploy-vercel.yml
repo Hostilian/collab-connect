@@ -146,53 +146,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Verify Vercel secrets
-        run: |
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo "Missing one or more required secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID" >&2
-            exit 1
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production
-      - name: Verify core app env vars (production)
-        run: |
-          set -e
-          ENV_FILE=""
-          for f in .env.production.local .env.local .env .vercel/.env.production.local .vercel/.env; do
-            if [ -f "$f" ]; then ENV_FILE="$f"; break; fi
-          done
-          if [ -z "$ENV_FILE" ]; then
-            echo "No env file found after vercel pull (production)." >&2
-            ls -la . .vercel || true
-            exit 1
-          fi
-          echo "Using env file: $ENV_FILE"
-          REQUIRED=(DATABASE_URL NEXTAUTH_SECRET NEXTAUTH_URL XAI_API_KEY)
-          MISSING=0
-          for VAR in "${REQUIRED[@]}"; do
-            if ! grep -E "^${VAR}=" "$ENV_FILE" >/dev/null; then
-              echo "Missing ${VAR} in $ENV_FILE" >&2
-              MISSING=1
-            fi
-          done
-          if [ $MISSING -eq 1 ]; then
-            echo "One or more required app env vars are missing. Configure them in Vercel Project Settings." >&2
-            exit 1
-          fi
-      - name: Build Project Artifacts
-        run: vercel build --prod
-      - name: Deploy Production to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: --prod
+      - name: Deploy to Vercel
+        run: vercel deploy --prod
       - name: Run smoke tests
         continue-on-error: true
         run: |

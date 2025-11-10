@@ -8,7 +8,7 @@ test.describe('Homepage', () => {
     await page.waitForLoadState('networkidle')
 
     // Check that the page has loaded
-    expect(page.url()).toContain('localhost:3000')
+    await expect(page).toHaveURL('/');
   })
 
   test('should have correct title', async ({ page }) => {
