@@ -108,7 +108,7 @@ export async function sendPhoneVerificationOTP(
     // Send SMS via Twilio
     if (twilioClient && TWILIO_PHONE) {
       await twilioClient.messages.create({
-        body: `Your CollabConnect verification code is: ${otp}. Valid for ${OTP_EXPIRY_MINUTES} minutes.`,
+        body: `Your Courier Connect verification code is: ${otp}. Valid for ${OTP_EXPIRY_MINUTES} minutes.`,
         from: TWILIO_PHONE,
         to: formattedPhone,
       });

@@ -1,11 +1,11 @@
 {
-  "name": "CollabConnect",
-  "short_name": "CollabConnect",
-  "description": "Connect and collaborate with people around the world",
+  "name": "Courier Connect",
+  "short_name": "Courier",
+  "description": "Simple courier service. Get stuff delivered. 70% to couriers, 30% to us.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -74,17 +74,17 @@
   ],
   "shortcuts": [
     {
-      "name": "Map",
-      "short_name": "Map",
-      "description": "View collaborators on map",
-      "url": "/map",
+      "name": "New Delivery",
+      "short_name": "Deliver",
+      "description": "Request a new delivery",
+      "url": "/delivery",
       "icons": [{ "src": "/icons/map-icon.png", "sizes": "96x96" }]
     },
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View your dashboard",
-      "url": "/dashboard",
+      "name": "Courier Jobs",
+      "short_name": "Jobs",
+      "description": "View available delivery jobs",
+      "url": "/courier/jobs",
       "icons": [{ "src": "/icons/dashboard-icon.png", "sizes": "96x96" }]
     }
   ],

@@ -70,7 +70,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           TYPE="${{ steps.config.outputs.type }}"
-          FILENAME="collabconnect_${TYPE}_${TIMESTAMP}.sql.gz"
+          FILENAME="courierconnect_${TYPE}_${TIMESTAMP}.sql.gz"
           echo "filename=$FILENAME" >> $GITHUB_OUTPUT
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
 

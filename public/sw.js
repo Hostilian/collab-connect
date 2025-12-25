@@ -1,43 +1,46 @@
-// Service Worker for PWA functionality
+// Service Worker for Courier Connect PWA
+// Handles offline caching, push notifications, and background sync
 
-const CACHE_NAME = 'collabconnect-v1';
+const CACHE_NAME = 'courier-connect-v1';
 const urlsToCache = [
   '/',
-  '/dashboard',
-  '/map',
+  '/delivery',
+  '/courier/jobs',
   '/manifest.json',
-  '/globals.css',
 ];
 
 // Install event - cache static assets
-self.addEventListener('install', (event) => {
+globalThis.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
   // Activate immediately
-  self.skipWaiting();
+  globalThis.skipWaiting();
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
+globalThis.addEventListener('activate', (event) => {
+  const cacheWhitelist = new Set([CACHE_NAME]);
+
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (!cacheWhitelist.has(cacheName)) {
             return caches.delete(cacheName);
           }
+          return undefined;
         })
       );
     })
   );
   // Take control of all pages immediately
-  return self.clients.claim();
+  return globalThis.clients.claim();
 });
 
 // Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
+globalThis.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -46,32 +49,30 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
 
-        return fetch(event.request).then(
-          (response) => {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
+        return fetch(event.request).then((networkResponse) => {
+          // Check if valid response
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return networkResponse;
           }
-        );
+
+          // Clone the response
+          const responseToCache = networkResponse.clone();
+
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+
+          return networkResponse;
+        });
       })
   );
 });
 
 // Push notification event
-self.addEventListener('push', (event) => {
+globalThis.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {};
-  const title = data.title || 'CollabConnect';
+  const title = data.title || 'Courier Connect';
   const options = {
     body: data.body || 'You have a new notification',
     icon: data.icon || '/icon-192x192.png',
@@ -87,12 +88,12 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    globalThis.registration.showNotification(title, options)
   );
 });
 
 // Notification click event
-self.addEventListener('notificationclick', (event) => {
+globalThis.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   if (event.action === 'close') {
@@ -111,51 +112,9 @@ self.addEventListener('notificationclick', (event) => {
         }
         // Otherwise, open a new window
         if (clients.openWindow) {
-          const url = event.notification.data?.url || '/dashboard';
+          const url = event.notification.data?.url || '/courier/jobs';
           return clients.openWindow(url);
         }
       })
-  );
-});
-
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
-
-// Push notification event
-self.addEventListener('push', (event) => {
-  const data = event.data?.json() ?? {};
-  const title = data.title || 'CollabConnect';
-  const options = {
-    body: data.body || 'You have a new notification',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
-    data: data.url || '/',
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-// Notification click event
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  event.waitUntil(
-    clients.openWindow(event.notification.data)
   );
 });

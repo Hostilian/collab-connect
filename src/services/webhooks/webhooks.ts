@@ -223,7 +223,7 @@ async function deliverWebhook(
         'X-Webhook-Event': event,
         'X-Webhook-ID': webhookId,
         'X-Delivery-ID': delivery.id,
-        'User-Agent': 'CollabConnect-Webhooks/1.0',
+        'User-Agent': 'CourierConnect-Webhooks/1.0',
       },
       body: payloadString,
     });

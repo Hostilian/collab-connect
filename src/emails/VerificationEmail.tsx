@@ -12,24 +12,24 @@ import {
 } from '@react-email/components';
 
 interface VerificationEmailProps {
-    name: string;
-    verificationUrl: string;
+    readonly name: string;
+    readonly verificationUrl: string;
 }
 
 export default function VerificationEmail({ name, verificationUrl }: VerificationEmailProps) {
     return (
         <Html>
             <Head />
-            <Preview>Verify your CollabConnect account</Preview>
+            <Preview>Verify your Courier Connect account</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section style={header}>
-                        <Heading style={logo}>CollabConnect</Heading>
-                        <Text style={tagline}>Fighting the giants, together.</Text>
+                        <Heading style={logo}>Courier Connect</Heading>
+                        <Text style={tagline}>Prague's courier network. 70% to you.</Text>
                     </Section>
 
                     <Section style={content}>
-                        <Heading style={h1}>Welcome to CollabConnect, {name}!</Heading>
+                        <Heading style={h1}>Welcome to Courier Connect, {name}!</Heading>
 
                         <Text style={text}>
                             You're one step away from joining a community that fights insurance denials,

@@ -1,4 +1,4 @@
-# Quick Setup Guide for CollabConnect
+# Quick Setup Guide for Courier Connect
 
 ## Prerequisites
 

@@ -13,7 +13,7 @@ export async function geocodeAddress(address: string) {
       `&format=json&limit=1&addressdetails=1`,
       {
         headers: {
-          'User-Agent': 'CollabConnect/1.0 (contact@collabconnect.com)',
+          'User-Agent': 'CourierConnect/1.0 (contact@courierconnect.cz)',
         },
       }
     );
@@ -102,7 +102,7 @@ export async function reverseGeocode(lat: number, lon: number) {
       `lat=${lat}&lon=${lon}&format=json&addressdetails=1`,
       {
         headers: {
-          'User-Agent': 'CollabConnect/1.0 (contact@collabconnect.com)',
+          'User-Agent': 'CourierConnect/1.0 (contact@courierconnect.cz)',
         },
       }
     );

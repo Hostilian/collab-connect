@@ -61,12 +61,12 @@ export async function GET(request: NextRequest) {
         try {
             const resend = getResendClient();
             await resend.emails.send({
-                from: 'CollabConnect <onboarding@collabconnect.com>',
+                from: 'Courier Connect <onboarding@courierconnect.cz>',
                 to: user.email,
-                subject: 'Welcome to CollabConnect!',
+                subject: 'Welcome to Courier Connect!',
                 react: WelcomeEmail({
                     name: user.name || 'there',
-                    dashboardUrl: `${process.env.NEXTAUTH_URL}/dashboard`,
+                    dashboardUrl: `${process.env.NEXTAUTH_URL}/courier/jobs`,
                 }),
             });
         } catch (emailError) {

@@ -94,7 +94,7 @@ describe('InteractiveMap Integration', () => {
     };
 
     // @ts-expect-error - Mocking navigator.geolocation
-    global.navigator.geolocation = mockGeolocation;
+    (globalThis as typeof globalThis & { navigator: { geolocation: typeof mockGeolocation } }).navigator.geolocation = mockGeolocation;
 
     render(<InteractiveMap />);
 

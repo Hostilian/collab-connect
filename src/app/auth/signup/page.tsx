@@ -95,9 +95,9 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-gray-900">Join CollabConnect</h2>
+          <h2 className="text-4xl font-bold text-gray-900">Join Courier Connect</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Start connecting. Start collaborating. Start winning.
+            Become a courier. Earn 70% on every delivery.
           </p>
         </div>
 

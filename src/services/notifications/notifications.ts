@@ -273,24 +273,24 @@ function generateEmailHTML(title: string, message: string, link?: string): strin
         <title>${title}</title>
       </head>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">CollabConnect</h1>
+        <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Courier Connect</h1>
         </div>
         <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
           <h2 style="color: #333; margin-top: 0;">${title}</h2>
           <p style="font-size: 16px; color: #555;">${message}</p>
           ${link ? `
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+              <a href="${link}" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                 View Details
               </a>
             </div>
           ` : ''}
           <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
           <p style="font-size: 12px; color: #999; text-align: center;">
-            You received this email because you have notifications enabled in your CollabConnect account.
+            You received this email because you have notifications enabled in your Courier Connect account.
             <br>
-            <a href="${process.env.NEXTAUTH_URL}/dashboard/settings" style="color: #667eea;">Manage notification preferences</a>
+            <a href="${process.env.NEXTAUTH_URL}/courier/settings" style="color: #2563eb;">Manage notification preferences</a>
           </p>
         </div>
       </body>
@@ -320,7 +320,7 @@ async function sendPushNotification(
 
     // Configure VAPID keys (should be in environment variables)
     webpush.setVapidDetails(
-      `mailto:${process.env.VAPID_EMAIL || 'admin@collabconnect.com'}`,
+      `mailto:${process.env.VAPID_EMAIL || 'admin@courierconnect.cz'}`,
       process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
       process.env.VAPID_PRIVATE_KEY!
     );

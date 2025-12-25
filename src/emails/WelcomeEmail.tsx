@@ -12,27 +12,27 @@ import {
 } from '@react-email/components';
 
 interface WelcomeEmailProps {
-    name: string;
-    dashboardUrl: string;
+    readonly name: string;
+    readonly dashboardUrl: string;
 }
 
 export default function WelcomeEmail({ name, dashboardUrl }: WelcomeEmailProps) {
     return (
         <Html>
             <Head />
-            <Preview>Welcome to CollabConnect - Let's get started!</Preview>
+            <Preview>Welcome to Courier Connect - Let's get started!</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section style={header}>
-                        <Heading style={logo}>CollabConnect</Heading>
-                        <Text style={tagline}>Fighting the giants, together.</Text>
+                        <Heading style={logo}>Courier Connect</Heading>
+                        <Text style={tagline}>Prague's courier network. 70% to you.</Text>
                     </Section>
 
                     <Section style={content}>
                         <Heading style={h1}>🎉 You're verified, {name}!</Heading>
 
                         <Text style={text}>
-                            Your email is now verified, and you're officially part of the CollabConnect
+                            Your email is now verified, and you're officially part of the Courier Connect
                             community. Here's what you can do now:
                         </Text>
 

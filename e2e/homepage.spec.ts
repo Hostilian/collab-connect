@@ -15,7 +15,7 @@ test.describe('Homepage', () => {
     await page.goto('/')
 
     // Check page title or heading
-    await expect(page).toHaveTitle(/CollabConnect/i)
+    await expect(page).toHaveTitle(/Courier Connect/i)
   })
 })
 

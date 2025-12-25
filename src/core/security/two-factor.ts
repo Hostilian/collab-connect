@@ -10,7 +10,7 @@ import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import { prisma } from '@/core/database/prisma-client';
 
-const APP_NAME = 'CollabConnect';
+const APP_NAME = 'Courier Connect';
 
 /**
  * Generate a new TOTP secret for a user

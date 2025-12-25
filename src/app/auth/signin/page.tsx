@@ -45,9 +45,9 @@ export default function SignInPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-gray-900">CollabConnect</h2>
+          <h2 className="text-4xl font-bold text-gray-900">Courier Connect</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Join the movement. Connect. Collaborate. Win.
+            Prague's courier network. Sign in to start delivering.
           </p>
         </div>
 

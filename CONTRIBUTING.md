@@ -1,10 +1,10 @@
-# Contributing to CollabConnect
+# Contributing to Courier Connect
 
-Thank you for your interest in contributing to CollabConnect! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Courier Connect! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
-We're building a platform to bring people together. Be respectful, inclusive, and collaborative in all interactions.
+We're building a courier platform for Prague. Be respectful, inclusive, and collaborative in all interactions.
 
 ## Getting Started
 
@@ -225,4 +225,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to CollabConnect! 🤝
+Thank you for contributing to Courier Connect! 🚚

@@ -34,9 +34,9 @@ export async function sendVerificationEmail(userId: string, email: string, name:
         // Send email using Resend
         const resend = getResendClient();
         const { data, error } = await resend.emails.send({
-            from: 'CollabConnect <onboarding@collabconnect.com>',
+            from: 'Courier Connect <onboarding@courierconnect.cz>',
             to: email,
-            subject: 'Verify your CollabConnect account',
+            subject: 'Verify your Courier Connect account',
             react: VerificationEmail({
                 name: name || 'there',
                 verificationUrl,
@@ -89,7 +89,7 @@ export async function sendEmail(options: {
 }): Promise<void> {
     try {
         const emailPayload = {
-            from: 'CollabConnect <notifications@collabconnect.com>',
+            from: 'Courier Connect <notifications@courierconnect.cz>',
             to: options.to,
             subject: options.subject,
             ...(options.html ? { html: options.html } : {}),
