@@ -4,18 +4,27 @@ import { render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock maplibre-gl
-vi.mock('maplibre-gl', () => ({
-  Map: vi.fn(() => ({
+vi.mock('maplibre-gl', () => {
+  const MockMap = vi.fn(() => ({
     on: vi.fn(),
     remove: vi.fn(),
     addControl: vi.fn(),
     getCanvas: vi.fn(() => ({
       style: {},
     })),
-  })),
-  NavigationControl: vi.fn(),
-  GeolocateControl: vi.fn(),
-}));
+  }));
+  
+  return {
+    default: {
+      Map: MockMap,
+      NavigationControl: vi.fn(),
+      GeolocateControl: vi.fn(),
+    },
+    Map: MockMap,
+    NavigationControl: vi.fn(),
+    GeolocateControl: vi.fn(),
+  };
+});
 
 // Mock react-map-gl
 vi.mock('react-map-gl', () => ({
