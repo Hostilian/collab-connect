@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/core/auth/next-auth";
 import type { Session } from "next-auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -28,10 +28,11 @@ function checkRateLimit(identifier: string): boolean {
 
 export default auth(async (req: NextRequest & { auth: Session | null }) => {
   // Skip rate limiting for static assets
+  const staticPattern = /\.(ico|png|jpg|jpeg|svg|css|js|woff|woff2|ttf|eot)$/
   if (
     req.nextUrl.pathname.startsWith("/_next") ||
     req.nextUrl.pathname.startsWith("/static") ||
-    req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|svg|css|js|woff|woff2|ttf|eot)$/)
+    staticPattern.exec(req.nextUrl.pathname)
   ) {
     return NextResponse.next();
   }
@@ -61,12 +62,8 @@ export default auth(async (req: NextRequest & { auth: Session | null }) => {
 
   // Protected routes - require authentication
   const protectedPaths = [
-    "/dashboard",
-    "/profile",
-    "/groups",
-    "/collaborations",
-    "/map",
-    "/messages",
+    "/courier/dashboard",
+    "/courier/jobs",
   ];
 
   if (protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))) {
@@ -99,6 +96,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    String.raw`/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)`,
   ],
 };

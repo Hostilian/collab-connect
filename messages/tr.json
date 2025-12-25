@@ -12,5 +12,12 @@
   "form.small_package": "Küçük Paket",
   "form.medium_package": "Orta Paket",
   "form.large_package": "Büyük Paket",
-  "form.fragile": "Kırılabilir"
+  "form.fragile": "Kırılabilir",
+  "form.currency": "Para birimi",
+  "form.courier": "Kurye payı (%70)",
+  "form.platform": "Platform ücreti (%30)",
+  "form.breakdown": "Taban: {base} • Aciliyet: {time} • Eşya: {item}",
+  "form.urgency.express": "Acil",
+  "form.urgency.same_day": "Aynı gün",
+  "form.urgency.scheduled": "Planlı"
 }

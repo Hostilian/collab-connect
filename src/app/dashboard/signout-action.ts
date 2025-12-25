@@ -1,7 +1,0 @@
-// Server Action for sign out
-'use server'
-import { signOut } from '@/lib/auth';
-
-export async function signOutAction() {
-  await signOut();
-}

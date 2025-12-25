@@ -1,12 +1,12 @@
 export const metadata = {
-  title: 'CollabConnect - Connect and Collaborate',
-  description: 'Find and connect with collaborators around the world',
+  title: "Courier Connect — Instant delivery quotes",
+  description: "Book local deliveries in seconds and let vetted couriers keep 70% of every job.",
   manifest: '/manifest.json',
-  themeColor: '#3b82f6',
+  themeColor: '#f97316',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'CollabConnect',
+    title: 'Courier Connect',
   },
   icons: {
     icon: '/favicon.ico',
@@ -15,25 +15,25 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://collab-connect.com',
-    title: 'CollabConnect - Connect and Collaborate',
-    description: 'Find and connect with collaborators around the world',
-    siteName: 'CollabConnect',
+    url: 'https://courier-connect.io',
+    title: 'Courier Connect — Instant delivery quotes',
+    description: 'Book local deliveries in seconds and keep couriers paid fairly.',
+    siteName: 'Courier Connect',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'CollabConnect',
+        alt: 'Courier Connect',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CollabConnect - Connect and Collaborate',
-    description: 'Find and connect with collaborators around the world',
+    title: 'Courier Connect — Instant delivery quotes',
+    description: 'Book local deliveries in seconds and let couriers keep 70%.',
     images: ['/og-image.png'],
-    creator: '@collabconnect',
+    creator: '@courierconnect',
   },
   robots: {
     index: true,

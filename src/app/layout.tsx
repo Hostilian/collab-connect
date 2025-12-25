@@ -1,6 +1,7 @@
-import { Providers } from "@/components/Providers";
+import { Providers } from "@/shared/providers/Providers";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import type { ReactNode } from "react";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,15 +10,21 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CollabConnect - Connect. Collaborate. Win.",
-  description: "The platform that connects people to fight back against big institutions and collaborate on life's biggest challenges.",
-  keywords: "collaboration, insurance claims, house buying, community, transparency",
+  title: "Courier Connect — Book deliveries in seconds",
+  description: "Customers get instant quotes and couriers keep 70% of every completed job.",
+  keywords: [
+    "courier",
+    "delivery",
+    "same day",
+    "stripe connect",
+    "gig work",
+  ],
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="en">

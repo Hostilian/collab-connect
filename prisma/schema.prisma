@@ -1,5 +1,5 @@
-// CollabConnect Database Schema
-// The foundation for connecting people and fighting the system together
+// Courier Connect Database Schema
+// Customers book deliveries. Couriers get 70%. We keep 30%. That's it.
 
 generator client {
   provider = "prisma-client-js"
@@ -11,49 +11,30 @@ datasource db {
 }
 
 // ========================================
-// USER & AUTHENTICATION
+// AUTHENTICATION (NextAuth.js compatible)
 // ========================================
 
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
   emailVerified DateTime?
-  password      String? // nullable for OAuth users
+  password      String?
   name          String?
+  phone         String?
   image         String?
 
-  // Email verification tokens
-  emailVerificationToken   String?   @unique
-  emailVerificationExpires DateTime?
-
-  // Two-Factor Authentication
-  twoFactorEnabled Boolean   @default(false)
-  twoFactorSecret  String?   // TOTP secret
-  backupCodes      String[]  // Encrypted backup codes
-
-  // Transparency fields - show when account was created
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  lastLoginAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   // Relations
-  profile       Profile?
   accounts      Account[]
   sessions      Session[]
-
-  // Collaborations
-  groupMemberships     GroupMember[]
-  messagesCreated      Message[]
-  collaborationsOwned  Collaboration[] @relation("CollaborationOwner")
-  collaborations       CollaborationMember[]
-
-  // Activity
-  notifications        Notification[]
+  courier       Courier?
+  notifications Notification[]
 
   @@map("users")
 }
 
-// OAuth accounts (Google, GitHub, etc.)
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -84,423 +65,6 @@ model Session {
   @@map("sessions")
 }
 
-// ========================================
-// USER PROFILES - THE HEART OF TRANSPARENCY
-// ========================================
-
-model Profile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Basic info
-  bio         String?  @db.Text
-  location    String?
-  latitude    Float?   // For map display
-  longitude   Float?
-
-  // Verification status - FULL TRANSPARENCY
-  isVerified        Boolean   @default(false)
-  verifiedAt        DateTime?
-  verificationType  String?   // "email", "phone", "id", "manual"
-
-  // Profile customization
-  preferredLanguage String    @default("en")
-  profileStyle      String?   // User-chosen profile style/theme
-
-  // Collaboration stats - PUBLIC FOR TRANSPARENCY
-  totalCollaborations Int     @default(0)
-  successfulCollabs   Int     @default(0)
-  activeCollabs       Int     @default(0)
-
-  // Interests and hobbies
-  hobbies       ProfileHobby[]
-  interests     ProfileInterest[]
-
-  // Availability for collaboration
-  isAvailable   Boolean   @default(true)
-  availabilityNote String?
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Index for efficient map bounding-box queries
-  @@index([latitude, longitude])
-  @@map("profiles")
-}
-
-// ========================================
-// HOBBIES & INTERESTS - FOR MATCHING
-// ========================================
-
-model Hobby {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  category    String   // "sports", "arts", "tech", "community", etc.
-  description String?
-
-  profiles    ProfileHobby[]
-
-  createdAt   DateTime @default(now())
-
-  @@map("hobbies")
-}
-
-model ProfileHobby {
-  id        String   @id @default(cuid())
-  profileId String
-  hobbyId   String
-
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  hobby     Hobby    @relation(fields: [hobbyId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, hobbyId])
-  @@map("profile_hobbies")
-}
-
-model Interest {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  category    String   // "insurance", "real_estate", "legal", "finance", etc.
-  description String?
-
-  profiles    ProfileInterest[]
-
-  createdAt   DateTime @default(now())
-
-  @@map("interests")
-}
-
-model ProfileInterest {
-  id         String   @id @default(cuid())
-  profileId  String
-  interestId String
-
-  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, interestId])
-  @@map("profile_interests")
-}
-
-// ========================================
-// COLLABORATION GROUPS - WHERE THE MAGIC HAPPENS
-// ========================================
-
-model Group {
-  id          String   @id @default(cuid())
-  name        String
-  description String   @db.Text
-  type        String   // "insurance_fight", "house_bidding", "general", "hobby"
-
-  // Map visibility
-  isPublic    Boolean  @default(false)
-  latitude    Float?
-  longitude   Float?
-
-  // Metadata
-  maxMembers  Int?
-  currentMembers Int   @default(0)
-
-  // Transparency
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  members     GroupMember[]
-  messages    Message[]
-  collaborations Collaboration[]
-
-  @@map("groups")
-}
-
-model GroupMember {
-  id        String   @id @default(cuid())
-  groupId   String
-  userId    String
-  role      String   @default("member") // "owner", "admin", "member"
-
-  joinedAt  DateTime @default(now())
-
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([groupId, userId])
-  @@map("group_members")
-}
-
-// ========================================
-// COLLABORATIONS - TRACKING EVERYTHING
-// ========================================
-
-model Collaboration {
-  id          String   @id @default(cuid())
-  title       String
-  description String   @db.Text
-  type        String   // "insurance_claim", "house_purchase", "legal_action", "project"
-  status      String   @default("active") // "active", "completed", "failed", "paused"
-
-  // Ownership
-  ownerId     String
-  owner       User     @relation("CollaborationOwner", fields: [ownerId], references: [id])
-
-  // Optional group association
-  groupId     String?
-  group       Group?   @relation(fields: [groupId], references: [id])
-
-  // Outcome tracking - FOR TRANSPARENCY
-  outcome     String?  // "successful", "unsuccessful", "ongoing"
-  outcomeNote String?  @db.Text
-
-  // Timestamps
-  startedAt   DateTime @default(now())
-  completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  members     CollaborationMember[]
-  documents   CollaborationDocument[]
-
-  @@map("collaborations")
-}
-
-model CollaborationMember {
-  id              String        @id @default(cuid())
-  collaborationId String
-  userId          String
-  role            String        @default("member") // "lead", "member", "advisor"
-
-  joinedAt        DateTime      @default(now())
-  leftAt          DateTime?
-
-  collaboration   Collaboration @relation(fields: [collaborationId], references: [id], onDelete: Cascade)
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([collaborationId, userId])
-  @@map("collaboration_members")
-}
-
-// Document sharing for collaborations
-model CollaborationDocument {
-  id              String        @id @default(cuid())
-  collaborationId String
-  title           String
-  description     String?
-  fileUrl         String
-  fileType        String
-
-  uploadedAt      DateTime      @default(now())
-
-  collaboration   Collaboration @relation(fields: [collaborationId], references: [id], onDelete: Cascade)
-
-  @@map("collaboration_documents")
-}
-
-// ========================================
-// MESSAGING SYSTEM
-// ========================================
-
-model Message {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-
-  // Can be group message or direct message
-  groupId   String?
-  userId    String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("messages")
-}
-
-// ========================================
-// PROPERTY LISTINGS - FOR HOUSE BIDDING
-// ========================================
-
-model PropertyListing {
-  id          String   @id @default(cuid())
-  externalId  String?  @unique // From API (Zillow, etc.)
-
-  address     String
-  city        String
-  state       String
-  zipCode     String
-  country     String   @default("USA")
-
-  latitude    Float
-  longitude   Float
-
-  price       Float
-  bedrooms    Int?
-  bathrooms   Float?
-  sqft        Int?
-  propertyType String? // "house", "condo", "apartment", etc.
-
-  description String?  @db.Text
-  imageUrl    String?
-  listingUrl  String?
-
-  // Metadata
-  isActive    Boolean  @default(true)
-  source      String   // "zillow", "realtor", "manual"
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  favorites   PropertyFavorite[]
-
-  @@index([latitude, longitude])
-  @@map("property_listings")
-}
-
-// ========================================
-// NOTIFICATIONS
-// ========================================
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String   // "new_match", "group_invite", "message", "collaboration_update"
-  title     String
-  message   String
-  link      String?
-  data      Json?    // Additional data payload
-
-  // Delivery channels
-  sentInApp    Boolean  @default(true)
-  sentEmail    Boolean  @default(false)
-  sentPush     Boolean  @default(false)
-
-  // Status
-  isRead       Boolean  @default(false)
-  readAt       DateTime?
-  isArchived   Boolean  @default(false)
-  archivedAt   DateTime?
-
-  // Priority
-  priority     String   @default("normal") // "low", "normal", "high", "urgent"
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([isRead])
-  @@index([createdAt])
-  @@map("notifications")
-}
-
-model NotificationPreference {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-
-  // Channel preferences
-  emailEnabled      Boolean  @default(true)
-  pushEnabled       Boolean  @default(true)
-  inAppEnabled      Boolean  @default(true)
-
-  // Event preferences
-  newMatch          Boolean  @default(true)
-  groupInvite       Boolean  @default(true)
-  newMessage        Boolean  @default(true)
-  collaborationUpdate Boolean @default(true)
-  profileView       Boolean  @default(true)
-  weeklyDigest      Boolean  @default(true)
-
-  // Quiet hours
-  quietHoursEnabled Boolean  @default(false)
-  quietHoursStart   Int?     // Hour 0-23
-  quietHoursEnd     Int?     // Hour 0-23
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("notification_preferences")
-}
-
-// ========================================
-// AUDIT LOGGING
-// ========================================
-
-model AuditLog {
-  id           String   @id @default(cuid())
-  action       String   // Action type (LOGIN, LOGOUT, PROFILE_UPDATE, etc.)
-  userId       String?  // User who performed the action
-  userEmail    String?  // Email for reference
-  ipAddress    String?  // Client IP address
-  userAgent    String?  // Browser/client info
-  resource     String?  // Resource type affected
-  resourceId   String?  // Resource ID affected
-  details      Json?    // Additional details
-  success      Boolean  @default(true)
-  errorMessage String?  // Error if failed
-  timestamp    DateTime @default(now())
-
-  @@index([userId])
-  @@index([action])
-  @@index([timestamp])
-  @@index([success])
-  @@map("audit_logs")
-}
-
-// ========================================
-// WEBHOOKS SYSTEM
-// ========================================
-
-model Webhook {
-  id          String   @id @default(cuid())
-  userId      String   // Owner of the webhook
-  url         String   // Destination URL
-  secret      String   // For signature verification
-  events      String[] // Array of event types to subscribe to
-  isActive    Boolean  @default(true)
-  description String?
-
-  // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  lastTriggeredAt DateTime?
-
-  // Relations
-  deliveries  WebhookDelivery[]
-
-  @@index([userId])
-  @@index([isActive])
-  @@map("webhooks")
-}
-
-model WebhookDelivery {
-  id          String   @id @default(cuid())
-  webhookId   String
-  event       String   // Event type
-  payload     Json     // Event data
-  responseCode Int?    // HTTP response code
-  responseBody String?  @db.Text
-  success     Boolean  @default(false)
-  attempts    Int      @default(1)
-  nextRetryAt DateTime?
-  createdAt   DateTime @default(now())
-
-  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
-
-  @@index([webhookId])
-  @@index([success])
-  @@index([nextRetryAt])
-  @@index([createdAt])
-  @@map("webhook_deliveries")
-}
-
-// ========================================
-// VERIFICATION TOKENS
-// ========================================
-
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -511,7 +75,159 @@ model VerificationToken {
 }
 
 // ========================================
-// PUSH NOTIFICATIONS
+// COURIERS - The folks who do the work
+// ========================================
+
+model Courier {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe Connect for payouts
+  stripeAccountId   String?  @unique
+  stripeOnboarded   Boolean  @default(false)
+
+  // Verification
+  isVerified        Boolean  @default(false)
+  verifiedAt        DateTime?
+  idDocumentUrl     String?
+
+  // Stats
+  totalDeliveries   Int      @default(0)
+  totalEarnings     Int      @default(0) // in smallest currency unit (cents/haléře)
+  rating            Float    @default(5.0)
+  ratingCount       Int      @default(0)
+
+  // Availability
+  isActive          Boolean  @default(true)
+  currentLat        Float?
+  currentLng        Float?
+  lastLocationUpdate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliveries Delivery[]
+
+  @@index([isActive, isVerified])
+  @@index([currentLat, currentLng])
+  @@map("couriers")
+}
+
+// ========================================
+// DELIVERIES - The whole point of this app
+// ========================================
+
+model Delivery {
+  id String @id @default(cuid())
+
+  // Pickup details
+  pickupAddress   String
+  pickupLat       Float
+  pickupLng       Float
+  pickupNotes     String?
+
+  // Dropoff details
+  dropoffAddress  String
+  dropoffLat      Float
+  dropoffLng      Float
+  dropoffNotes    String?
+
+  // Scheduling
+  scheduledDate   DateTime
+  isExpress       Boolean  @default(false)
+
+  // Item info
+  itemType        String   // envelope, small_package, medium_package, large_package, fragile
+  itemDescription String?
+
+  // Customer (no account needed)
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+
+  // Pricing (stored in smallest currency unit)
+  distanceKm      Float
+  currency        String   @default("CZK")
+  totalPrice      Int      // What customer pays
+  courierPayout   Int      // 70% to courier
+  platformFee     Int      // 30% to us
+
+  // Status
+  status          DeliveryStatus @default(PENDING)
+
+  // Assignment
+  courierId       String?
+  courier         Courier?  @relation(fields: [courierId], references: [id])
+  acceptedAt      DateTime?
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  cancellationReason String?
+
+  // Payment
+  paymentIntentId String?   @unique
+  paymentStatus   PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  payoutId        String?
+  paidOutAt       DateTime?
+
+  // Tracking
+  trackingCode    String    @unique @default(cuid())
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+  @@index([courierId])
+  @@index([trackingCode])
+  @@index([scheduledDate])
+  @@map("deliveries")
+}
+
+enum DeliveryStatus {
+  PENDING      // Customer submitted, waiting for courier
+  ACCEPTED     // Courier accepted
+  PICKED_UP    // Courier has the package
+  DELIVERED    // Done!
+  CANCELLED    // Something went wrong
+}
+
+enum PaymentStatus {
+  PENDING      // Awaiting payment
+  PAID         // Customer paid
+  REFUNDED     // Money returned
+  PAYOUT_PENDING // Waiting to pay courier
+  PAID_OUT     // Courier received their 70%
+}
+
+// ========================================
+// NOTIFICATIONS
+// ========================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // job_available, delivery_accepted, delivery_complete, payout_sent
+  title     String
+  message   String
+  link      String?
+  data      Json?
+
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ========================================
+// PUSH SUBSCRIPTIONS (for web push)
 // ========================================
 
 model PushSubscription {
@@ -522,273 +238,47 @@ model PushSubscription {
   auth      String
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@unique([userId, endpoint])
-  @@index([userId])
-  @@index([isActive])
+  @@index([userId, isActive])
   @@map("push_subscriptions")
 }
 
 // ========================================
-// PHONE VERIFICATION
+// WEBHOOK DELIVERIES (for integrations)
 // ========================================
 
-model PhoneVerification {
+model Webhook {
   id          String   @id @default(cuid())
-  userId      String   @unique
-  phoneNumber String
-  otp         String   // Hashed OTP
-  verified    Boolean  @default(false)
-  attempts    Int      @default(0)
-  expiresAt   DateTime
-  verifiedAt  DateTime?
+  url         String
+  secret      String
+  events      String[]
+  isActive    Boolean  @default(true)
+  description String?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([phoneNumber])
-  @@index([expiresAt])
-  @@map("phone_verifications")
+  deliveries  WebhookDelivery[]
+
+  @@map("webhooks")
 }
 
-// ========================================
-// ID VERIFICATION SYSTEM
-// ========================================
+model WebhookDelivery {
+  id           String   @id @default(cuid())
+  webhookId    String
+  webhook      Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
-model IdVerification {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  documentType    String   // "passport", "drivers_license", "national_id"
-  documentNumber  String?
-  frontImageUrl   String
-  backImageUrl    String?
-  selfieUrl       String?
+  event        String
+  payload      Json
+  responseCode Int?
+  responseBody String?  @db.Text
+  success      Boolean  @default(false)
+  attempts     Int      @default(1)
 
-  status          String   @default("pending") // "pending", "approved", "rejected", "needs_review"
-  reviewedBy      String?  // Admin user ID
-  reviewedAt      DateTime?
-  rejectionReason String?  @db.Text
+  createdAt    DateTime @default(now())
 
-  expiresAt       DateTime? // Document expiration
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@map("id_verifications")
-}
-
-// ========================================
-// REPUTATION SYSTEM
-// ========================================
-
-model Reputation {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  score           Int      @default(0)
-  level           String   @default("newcomer") // "newcomer", "member", "trusted", "veteran", "legendary"
-  totalRatings    Int      @default(0)
-  positiveRatings Int      @default(0)
-  negativeRatings Int      @default(0)
-
-  // Breakdown by category
-  communicationScore  Int @default(0)
-  reliabilityScore    Int @default(0)
-  collaborationScore  Int @default(0)
-
-  // Badges earned
-  badges          ReputationBadge[]
-
-  lastCalculated  DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
-  @@index([score])
-  @@map("reputations")
-}
-
-model Rating {
-  id              String   @id @default(cuid())
-  fromUserId      String
-  toUserId        String
-  collaborationId String?
-
-  rating          Int      // 1-5
-  category        String   // "communication", "reliability", "collaboration"
-  comment         String?  @db.Text
-
-  isAnonymous     Boolean  @default(false)
-  isDisputed      Boolean  @default(false)
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([fromUserId, toUserId, collaborationId, category])
-  @@index([toUserId])
-  @@index([rating])
-  @@map("ratings")
-}
-
-model ReputationBadge {
-  id            String   @id @default(cuid())
-  reputationId  String
-  badgeType     String   // "early_adopter", "helpful", "verified", "super_collaborator"
-  name          String
-  description   String
-  imageUrl      String?
-  earnedAt      DateTime @default(now())
-
-  reputation    Reputation @relation(fields: [reputationId], references: [id], onDelete: Cascade)
-
-  @@index([reputationId])
-  @@map("reputation_badges")
-}
-
-// ========================================
-// ACTIVITY FEED
-// ========================================
-
-model Activity {
-  id          String   @id @default(cuid())
-  userId      String
-  actorId     String?  // User who performed the action (if different)
-  type        String   // "profile_update", "collaboration_joined", "group_created", "rating_received"
-  title       String
-  description String?  @db.Text
-  metadata    Json?    // Additional data
-
-  isPublic    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-  @@index([createdAt])
-  @@index([type])
-  @@map("activities")
-}
-
-// ========================================
-// ONBOARDING
-// ========================================
-
-model OnboardingProgress {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-
-  currentStep           Int      @default(1)
-  totalSteps            Int      @default(6)
-  isComplete            Boolean  @default(false)
-
-  // Step completion tracking
-  profileCompleted      Boolean  @default(false)
-  locationAdded         Boolean  @default(false)
-  interestsAdded        Boolean  @default(false)
-  verificationStarted   Boolean  @default(false)
-  firstGroupJoined      Boolean  @default(false)
-  tourCompleted         Boolean  @default(false)
-
-  completedAt           DateTime?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  @@index([userId])
-  @@map("onboarding_progress")
-}
-
-// ========================================
-// REAL-TIME MESSAGING (Enhanced)
-// ========================================
-
-model Conversation {
-  id            String   @id @default(cuid())
-  type          String   @default("direct") // "direct" or "group"
-  groupId       String?
-
-  lastMessageAt DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  participants  ConversationParticipant[]
-  messages      DirectMessage[]
-
-  @@index([lastMessageAt])
-  @@map("conversations")
-}
-
-model ConversationParticipant {
-  id              String   @id @default(cuid())
-  conversationId  String
-  userId          String
-
-  joinedAt        DateTime @default(now())
-  lastReadAt      DateTime @default(now())
-  isMuted         Boolean  @default(false)
-
-  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@unique([conversationId, userId])
-  @@index([userId])
-  @@map("conversation_participants")
-}
-
-model DirectMessage {
-  id              String   @id @default(cuid())
-  conversationId  String
-  senderId        String
-  content         String   @db.Text
-
-  type            String   @default("text") // "text", "image", "file", "system"
-  attachmentUrl   String?
-
-  isEdited        Boolean  @default(false)
-  editedAt        DateTime?
-
-  isDeleted       Boolean  @default(false)
-  deletedAt       DateTime?
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId])
-  @@index([senderId])
-  @@index([createdAt])
-  @@map("direct_messages")
-}
-
-// ========================================
-// PROPERTY SEARCH & FAVORITES
-// ========================================
-
-model PropertyFavorite {
-  id         String   @id @default(cuid())
-  userId     String
-  propertyId String
-  notes      String?  @db.Text
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  property   PropertyListing @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, propertyId])
-  @@index([userId])
-  @@map("property_favorites")
-}
-
-model PropertySearch {
-  id          String   @id @default(cuid())
-  userId      String
-
-  query       String
-  filters     Json     // Search filters as JSON
-  resultCount Int
-
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-  @@index([createdAt])
-  @@map("property_searches")
+  @@index([webhookId, success])
+  @@map("webhook_deliveries")
 }
 

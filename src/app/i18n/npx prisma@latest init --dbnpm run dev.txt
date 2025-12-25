@@ -1,1 +1,0 @@
-npx prisma@latest init --dbnpm run dev

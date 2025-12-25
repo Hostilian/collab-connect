@@ -12,5 +12,12 @@
   "form.small_package": "Malý balíček",
   "form.medium_package": "Střední balíček",
   "form.large_package": "Velký balík",
-  "form.fragile": "Křehké"
+  "form.fragile": "Křehké",
+  "form.currency": "Měna",
+  "form.courier": "Kurýr (70 %)",
+  "form.platform": "Naše provize (30 %)",
+  "form.breakdown": "Základ: {base} • Naléhavost: {time} • Typ: {item}",
+  "form.urgency.express": "Express",
+  "form.urgency.same_day": "Tentýž den",
+  "form.urgency.scheduled": "Plánované"
 }

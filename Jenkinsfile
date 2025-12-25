@@ -17,19 +17,24 @@ pipeline {
       steps { sh 'npm run typecheck' }
     }
     stage('Test') {
-      steps { sh 'npm run test:coverage' }
+      steps { sh 'npm run test:coverage -- --reporter=junit --outputFile=test-results/junit.xml' }
     }
     stage('Build') {
       steps { sh 'npm run build' }
     }
     stage('Optional Deploy') {
-      when { environment name: 'VERCEL_TOKEN', value: '' }
+      when {
+        expression { return env.VERCEL_TOKEN?.trim() }
+      }
       steps {
-        echo 'VERCEL_TOKEN not set, skipping deploy'
+        echo 'Deploying to Vercel...'
+        sh 'npx vercel --prod --token=$VERCEL_TOKEN'
       }
     }
   }
   post {
-    always { junit '**/test-results/*.xml' }
+    always {
+      junit allowEmptyResults: true, testResults: '**/test-results/*.xml'
+    }
   }
 }

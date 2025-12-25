@@ -12,5 +12,12 @@
   "form.small_package": "Маленька посилка",
   "form.medium_package": "Середня посилка",
   "form.large_package": "Велика посилка",
-  "form.fragile": "Крихке"
+  "form.fragile": "Крихке",
+  "form.currency": "Валюта",
+  "form.courier": "Кур'єру (70%)",
+  "form.platform": "Наша комісія (30%)",
+  "form.breakdown": "База: {base} • Терміновість: {time} • Тип: {item}",
+  "form.urgency.express": "Терміново",
+  "form.urgency.same_day": "Сьогодні",
+  "form.urgency.scheduled": "Заплановано"
 }

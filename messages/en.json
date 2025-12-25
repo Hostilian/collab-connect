@@ -1,4 +1,23 @@
 {
-  "app.title": "Collab Connect - Collaboration for You",
-  "app.description": "Find homes, invite friends, and collaborate on buying property together. No delivery features included."
+  "app.title": "Courier Connect — deliveries without the drama",
+  "app.description": "Tell us where to pick up, where to drop off, and when you need it. We match you with a courier in minutes.",
+  "form.pickup": "Pickup address",
+  "form.delivery": "Delivery address",
+  "form.date": "Delivery date",
+  "form.time": "Delivery time",
+  "form.itemType": "What are we hauling?",
+  "form.price": "Quote",
+  "form.submit": "Get my quote",
+  "form.envelope": "Envelope",
+  "form.small_package": "Small package",
+  "form.medium_package": "Medium package",
+  "form.large_package": "Large package",
+  "form.fragile": "Fragile item",
+  "form.currency": "Currency",
+  "form.courier": "Courier share (70%)",
+  "form.platform": "Platform fee (30%)",
+  "form.breakdown": "Base distance: {base} • Urgency: {time} • Item: {item}",
+  "form.urgency.express": "Express",
+  "form.urgency.same_day": "Same day",
+  "form.urgency.scheduled": "Scheduled"
 }
